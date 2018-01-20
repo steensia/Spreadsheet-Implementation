@@ -60,11 +60,17 @@ namespace Formulas
         /// </summary>
         private static IEnumerable<string> GetTokens(String formula)
         {
-            // Patterns for individual tokens
+            // Patterns for individual tokens.
+            // NOTE:  These patterns are designed to be used to create a pattern to split a string into tokens.
+            // For example, the opPattern will match any string that contains an operator symbol, such as
+            // "abc+def".  If you want to use one of these patterns to match an entire string (e.g., make it so
+            // the opPattern will match "+" but not "abc+def", you need to add ^ to the beginning of the pattern
+            // and $ to the end (e.g., opPattern would need to be @"^[\+\-*/]$".)
             String lpPattern = @"\(";
             String rpPattern = @"\)";
             String opPattern = @"[\+\-*/]";
             String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
+
             // PLEASE NOTE:  I have added white space to this regex to make it more readable.
             // When the regex is used, it is necessary to include a parameter that says
             // embedded white space should be ignored.  See below for an example of this.
@@ -72,8 +78,9 @@ namespace Formulas
             String spacePattern = @"\s+";
 
             // Overall pattern.  It contains embedded white space that must be ignored when
-            // it is used.  See below for an example of this.
-            String pattern = String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4}) | ({5})",
+            // it is used.  See below for an example of this.  This pattern is useful for 
+            // splitting a string into tokens.
+            String splittingPattern = String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4}) | ({5})",
                                             lpPattern, rpPattern, opPattern, varPattern, doublePattern, spacePattern);
 
             // Enumerate matching tokens that don't consist solely of white space.
