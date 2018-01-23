@@ -37,6 +37,11 @@ namespace Formulas
         /// </summary>
         public Formula(String formula)
         {
+            //If invalid formula, throw FormulaFormatException
+            if(formula != null)
+            {
+                throw new FormulaFormatException("You must enter a valid expression");
+            }
         }
         /// <summary>
         /// Evaluates this Formula, using the Lookup delegate to determine the values of variables.  (The
@@ -49,6 +54,8 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
+            //if undefined variables or div by zero
+            //else throw FormulaEvaluationException
             return 0;
         }
 
