@@ -37,57 +37,6 @@ namespace Formulas
         /// </summary>
         public Formula(String formula)
         {
-            IEnumerable<string> tokenList = GetTokens(formula);
-
-            int lpCount = 0;
-            int rpCount = 0;
-            int operatorCount = 0;
-            int varCount = 0;
-            int doubleCount;
-
-            String lpPattern = @"\(";
-            String rpPattern = @"\)";
-            String opPattern = @"[\+\-*/]";
-            String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
-            //String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
-
-            foreach (string token in tokenList)
-            {
-                if (Regex.IsMatch(token, lpPattern))
-                {
-                    lpCount++;
-                }
-                else if (Regex.IsMatch(token, rpPattern))
-                {
-                    rpCount++;
-                }
-                else if (Regex.IsMatch(token, opPattern))
-                {
-                    operatorCount++;
-                }
-                else if (Regex.IsMatch(token, varPattern))
-                {
-                    varCount++;
-                }
-                else
-                {
-                    throw new FormulaFormatException("This is an invalid expression");
-                }
-                //if(n.Contains("("))
-                //{
-                //    lpCount++;
-                //}
-                //else if(n.Contains(")"))
-                //{
-                //    rpCount++;
-                //}
-                //else if(n.Contains("+") || n.Contains("-") || n.Contains("*") || n.Contains("/"))
-                //{
-                //    operatorCount++;
-                //}
-                //else if(
-
-            }
         }
         /// <summary>
         /// Evaluates this Formula, using the Lookup delegate to determine the values of variables.  (The
