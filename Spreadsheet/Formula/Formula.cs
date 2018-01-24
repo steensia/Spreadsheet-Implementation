@@ -37,57 +37,69 @@ namespace Formulas
         /// </summary>
         public Formula(String formula)
         {
-            IEnumerable<string> tokenList = GetTokens(formula);
+            var tokenList = GetTokens(formula);
 
             int lpCount = 0;
             int rpCount = 0;
             int operatorCount = 0;
             int varCount = 0;
-            int doubleCount;
+            int doubleCount = 0;
 
             String lpPattern = @"\(";
             String rpPattern = @"\)";
             String opPattern = @"[\+\-*/]";
             String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
-            //String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
+            String doublePattern = @"?d*(?:\d*\.\d*)?$";
 
             foreach (string token in tokenList)
             {
+                //Ensures that the closing parentheses should not exceed the number of opening parentheses
+                if(lpCount != 0 && rpCount > lpCount)
+                {
+                    throw new FormulaFormatException("This is an invalid expression");
+                }
+
+                //Checks for opening parentheses
                 if (Regex.IsMatch(token, lpPattern))
                 {
                     lpCount++;
                 }
+                //Checks for closing parentheses
                 else if (Regex.IsMatch(token, rpPattern))
                 {
                     rpCount++;
                 }
+                //Checks for math operators
                 else if (Regex.IsMatch(token, opPattern))
                 {
                     operatorCount++;
                 }
+                //Checks for variable token
                 else if (Regex.IsMatch(token, varPattern))
                 {
                     varCount++;
+                }
+                //Checks for double literals
+                else if (Regex.IsMatch(token, doublePattern))
+                {
+                    doubleCount++;
                 }
                 else
                 {
                     throw new FormulaFormatException("This is an invalid expression");
                 }
-                //if(n.Contains("("))
-                //{
-                //    lpCount++;
-                //}
-                //else if(n.Contains(")"))
-                //{
-                //    rpCount++;
-                //}
-                //else if(n.Contains("+") || n.Contains("-") || n.Contains("*") || n.Contains("/"))
-                //{
-                //    operatorCount++;
-                //}
-                //else if(
-
             }
+            //Ensures that there is at least one token
+            if (lpCount != 0 || rpCount != 0 || operatorCount != 0 || varCount != 0 || doubleCount != 0)
+            {
+                Formula form = new Formula(formula);
+            }
+            else
+            {
+                throw new FormulaFormatException("Must contain at least one token");
+            }
+
+            
         }
         /// <summary>
         /// Evaluates this Formula, using the Lookup delegate to determine the values of variables.  (The
