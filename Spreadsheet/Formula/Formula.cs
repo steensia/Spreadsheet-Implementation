@@ -35,8 +35,22 @@ namespace Formulas
         /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
         /// explanatory Message.
         /// </summary>
+        /// 
+
+        private List<string> tokenList;
         public Formula(String formula)
         {
+            var temp = GetTokens(formula);
+
+            foreach(string token in temp)
+            {
+                tokenList.Add(token);
+            }
+            if(tokenList.Count < 1)
+            {
+                throw new FormulaFormatException("Must contain a valid token");
+            }
+
         }
         /// <summary>
         /// Evaluates this Formula, using the Lookup delegate to determine the values of variables.  (The
