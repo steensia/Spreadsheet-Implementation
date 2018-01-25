@@ -251,7 +251,130 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
-            return 0;
+            Stack<double> valStack = new Stack<double>();
+            Stack<string> opStack = new Stack<string>();
+            foreach (string t in tokenList)
+            {
+                double result;
+                if (Double.TryParse(t, out double numTemp) || Regex.IsMatch(t, varPattern))
+                {
+                    //if variable
+                    if(Regex.IsMatch(t, varPattern))
+                    {
+                        try
+                        {
+                            numTemp = lookup(t);
+                        }
+                        catch
+                        {
+                            throw new UndefinedVariableException("This is not a valid variable");
+                        }
+                    }
+                    if (opStack.Peek().Equals("*"))
+                    {
+                        result = valStack.Pop() * numTemp;
+                        valStack.Push(result);
+                    }
+                    else if(opStack.Peek().Equals("/"))
+                    {
+                        result = valStack.Pop() / numTemp;
+                        if(result == 0)
+                        {
+                            throw new FormulaEvaluationException("A division by zero is not allowed");
+                        }
+                        valStack.Push(result);
+                    }
+                    else
+                    {
+                        valStack.Push(numTemp);
+                    }
+                }
+                else if (t.Equals("+"))
+                {
+                    if(opStack.Peek().Equals("+"))
+                        {
+                        double result2 = valStack.Pop() + valStack.Pop();
+                        opStack.Pop();
+
+                        valStack.Push(result2);
+                        opStack.Push(t);
+                        }
+                }
+                else if (t.Equals("-"))
+                {
+                    if (opStack.Peek().Equals("-"))
+                    {
+                        double result2 = valStack.Pop() + valStack.Pop();
+                        opStack.Pop();
+
+                        valStack.Push(result2);
+                        opStack.Push(t);
+                    }
+                }
+                else if(t.Equals("*") || t.Equals("/"))
+                {
+                    opStack.Push(t);
+                }
+                else if (Regex.IsMatch(t, lpPattern))
+                {
+                    opStack.Push(t);
+                }
+                else if (Regex.IsMatch(t, rpPattern))
+                {
+                    if(opStack.Peek().Equals("+"))
+                    {
+                        double result2 = valStack.Pop() + valStack.Pop();
+                        opStack.Pop();
+
+                        valStack.Push(result2);
+                        opStack.Pop();
+
+                        if(opStack.Peek().Equals("*"))
+                        {
+                            double result3 = valStack.Pop() * valStack.Pop();
+                            opStack.Pop();
+                            valStack.Push(result3);
+                        }
+                        else if (opStack.Peek().Equals("/"))
+                        {
+                            double result3 = valStack.Pop() / valStack.Pop();
+                            opStack.Pop();
+                            valStack.Push(result3);
+                        }
+                        else
+                        {
+                            throw new FormulaEvaluationException("Cannot evaluate this expression");
+                        }
+                    }
+                    else
+                    {
+                        throw new FormulaEvaluationException("Cannot evaluate this expression");
+                    }
+                }
+                else
+                {
+                    throw new FormulaEvaluationException("Cannot evaluate this expression");
+                }
+            }
+            if (opStack.Count < 1)
+            {
+                return valStack.Pop();
+            }
+            else
+            {
+                if(opStack.Peek().Equals("+"))
+                {
+                    return valStack.Pop() + valStack.Pop();
+                }
+                else if (opStack.Peek().Equals("-"))
+                {
+                    return valStack.Pop() - valStack.Pop();
+                }
+                else
+                {
+                    throw new FormulaEvaluationException("Cannot evaluate this expression");
+                }
+            }
         }
 
         /// <summary>
