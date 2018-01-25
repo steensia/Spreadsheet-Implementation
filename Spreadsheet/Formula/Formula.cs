@@ -35,8 +35,31 @@ namespace Formulas
         /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
         /// explanatory Message.
         /// </summary>
+        /// 
+
+                    private List<string> tokenList;
+
+        bool lpFlag = false;
+        bool rpFlag = false;
+        bool opFlag = false;
+        bool varFlag = false;
+        bool doubleFlag = false;
+
+        int lpCount = 0;
+        int rpCount = 0;
+        //int opCount = 0;
+        //int varCount = 0;
+        //int doubleCount = 0;
+
+        const String lpPattern = @"\(";
+        const String rpPattern = @"\)";
+        const String opPattern = @"[\+\-*/]";
+        const String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
+        const String doublePattern = @"?d*(?:\d*\.\d*)?$";
         public Formula(String formula)
         {
+            var tempList = GetTokens(formula);
+            
         }
         /// <summary>
         /// Evaluates this Formula, using the Lookup delegate to determine the values of variables.  (The
