@@ -87,7 +87,7 @@ namespace Formulas
             //Condition for only two tokens
             else if (tokenList.Count == 2)
             {
-                if (Double.TryParse(tokenList[0], out double numTemp) || Regex.IsMatch(tokenList[0], varPattern) || Regex.IsMatch(tokenList[0], lpPattern))
+                if (Double.TryParse(tokenList[0], out double numTemp) || Regex.IsMatch(tokenList[0], varPattern))
                 {
                     if (Double.TryParse(tokenList[tokenList.Count - 1], out double numTempFour) || Regex.IsMatch(tokenList[tokenList.Count - 1], varPattern) || Regex.IsMatch(tokenList[0], rpPattern))
                     {
@@ -97,6 +97,10 @@ namespace Formulas
                     {
                         throw new FormulaFormatException("This is an invalid token");
                     }
+                }
+                else if(Regex.IsMatch(tokenList[0], lpPattern))
+                {
+                    lpCount++;
                 }
                 else
                 {
