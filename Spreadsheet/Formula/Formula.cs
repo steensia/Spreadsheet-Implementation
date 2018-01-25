@@ -47,9 +47,6 @@ namespace Formulas
 
         int lpCount = 0;
         int rpCount = 0;
-        //int opCount = 0;
-        //int varCount = 0;
-        //int doubleCount = 0;
 
         const String lpPattern = @"\(";
         const String rpPattern = @"\)";
@@ -61,13 +58,13 @@ namespace Formulas
         {
             var temp = GetTokens(formula);
 
-            foreach(string token in temp)
+            foreach (string token in temp)
             {
                 tokenList.Add(token);
             }
 
             //Check if there is at least one token
-            if(tokenList.Count < 1)
+            if (tokenList.Count < 1)
             {
                 throw new FormulaFormatException("Must contain a valid token");
             }
@@ -89,7 +86,7 @@ namespace Formulas
             {
                 if (Double.TryParse(tokenList[0], out double numTemp) || Regex.IsMatch(tokenList[0], varPattern))
                 {
-                    if (Double.TryParse(tokenList[tokenList.Count - 1], out double numTempFour) || Regex.IsMatch(tokenList[tokenList.Count - 1], varPattern) || Regex.IsMatch(tokenList[0], rpPattern))
+                    if (Regex.IsMatch(tokenList[1], opPattern) || Regex.IsMatch(tokenList[1], rpPattern))
                     {
                         Formula form = new Formula(formula);
                     }
@@ -97,10 +94,18 @@ namespace Formulas
                     {
                         throw new FormulaFormatException("This is an invalid token");
                     }
+
                 }
-                else if(Regex.IsMatch(tokenList[0], lpPattern))
+                else if (Regex.IsMatch(tokenList[0], lpPattern))
                 {
-                    lpCount++;
+                    if (Double.TryParse(tokenList[1], out double numTempFour) || Regex.IsMatch(tokenList[1], varPattern) || Regex.IsMatch(tokenList[1], lpPattern))
+                    {
+                        Formula form = new Formula(formula);
+                    }
+                    else
+                    {
+                        throw new FormulaFormatException("This is an invalid token");
+                    }
                 }
                 else
                 {
