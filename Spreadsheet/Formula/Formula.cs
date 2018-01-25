@@ -122,11 +122,11 @@ namespace Formulas
                 }
                 else if (Regex.IsMatch(tokenList[0], varPattern))
                 {
-                    doubleFlag = true;
+                    varFlag = true;
                 }
                 else if (Regex.IsMatch(tokenList[0], lpPattern))
                 {
-                    doubleFlag = true;
+                    lpFlag = true;
                 }
 
                 for (int i = 1; i < tokenList.Count; i++)
@@ -139,7 +139,7 @@ namespace Formulas
                     //A token following an open parenthesis must be a number, variable, or open parenthesis
                     if (lpFlag)
                     {
-                        if (Double.TryParse(tokenList[i], out double numTemp) || Regex.IsMatch(tokenList[i], varPattern) || Regex.IsMatch(tokenList[i], lpPattern))
+                        if (Double.TryParse(tokenList[i], out double numTemp2) || Regex.IsMatch(tokenList[i], varPattern) || Regex.IsMatch(tokenList[i], lpPattern))
                         {
                             lpFlag = false;
                         }
@@ -151,7 +151,7 @@ namespace Formulas
                     //A token following an operator must be a number, variable, or open parenthesis
                     else if (opFlag)
                     {
-                        if (Double.TryParse(tokenList[i], out double numTemp) || Regex.IsMatch(tokenList[i], varPattern) || Regex.IsMatch(tokenList[i], lpPattern))
+                        if (Double.TryParse(tokenList[i], out double numTemp2) || Regex.IsMatch(tokenList[i], varPattern) || Regex.IsMatch(tokenList[i], lpPattern))
                         {
                             opFlag = false;
                         }
@@ -196,45 +196,39 @@ namespace Formulas
                             throw new FormulaFormatException("This is an invalid token");
                         }
                     }
-                    //Checks for opening parentheses
-                    else if (Regex.IsMatch(tokenList[i], lpPattern))
+                    if (i != tokenList.Count)
                     {
-                        lpCount++;
-                        lpFlag = true;
-                    }
-                    //Checks for closing parentheses
-                    else if (Regex.IsMatch(tokenList[i], rpPattern))
-                    {
-                        rpCount++;
-                        rpFlag = true;
-                    }
-                    //Checks for math operators
-                    else if (Regex.IsMatch(tokenList[i], opPattern))
-                    {
-                        opFlag = true;
-                    }
-                    //Checks for variable token
-                    else if (Regex.IsMatch(tokenList[i], varPattern))
-                    {
-                        varFlag = true;
-                    }
-                    //Checks for double literals
-                    else if (Double.TryParse(tokenList[i], out double numTemp))
-                    {
-                        doubleFlag = true;
-                    }
-                    else
-                    {
-                        throw new FormulaFormatException("This is an invalid token");
+                        //Checks for opening parentheses
+                        if (Regex.IsMatch(tokenList[i], lpPattern))
+                        {
+                            lpCount++;
+                            lpFlag = true;
+                        }
+                        //Checks for closing parentheses
+                        if (Regex.IsMatch(tokenList[i], rpPattern))
+                        {
+                            rpCount++;
+                            rpFlag = true;
+                        }
+                        //Checks for math operators
+                        if (Regex.IsMatch(tokenList[i], opPattern))
+                        {
+                            opFlag = true;
+                        }
+                        //Checks for variable token
+                        if (Regex.IsMatch(tokenList[i], varPattern))
+                        {
+                            varFlag = true;
+                        }
+                        //Checks for double literals
+                        if (Double.TryParse(tokenList[i], out double numTemp))
+                        {
+                            doubleFlag = true;
+                        }
                     }
                 }
-
                 //Equal number of parentheses in the formula   
-                if (lpCount == rpCount)
-                {
-                    Formula form = new Formula(formula);
-                }
-                else
+                if (lpCount != rpCount)
                 {
                     throw new FormulaFormatException("Must contain at least one token");
                 }
