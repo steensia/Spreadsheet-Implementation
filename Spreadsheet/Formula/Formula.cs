@@ -37,7 +37,7 @@ namespace Formulas
         /// </summary>
         /// 
 
-                    private List<string> tokenList;
+        private List<string> tokenList = new List<string>();
 
         bool lpFlag = false;
         bool rpFlag = false;
@@ -55,11 +55,49 @@ namespace Formulas
         const String rpPattern = @"\)";
         const String opPattern = @"[\+\-*/]";
         const String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
-        const String doublePattern = @"?d*(?:\d*\.\d*)?$";
+        const String doublePattern = @"-?d*(?:\d*\.\d*)?$";
         public Formula(String formula)
         {
             var tempList = GetTokens(formula);
-            
+            foreach(string n in tempList)
+            {
+                tokenList.Add(n);
+            }
+
+            for(int i = 0; i < tokenList.Count; i++)
+            {
+                //Checks for opening parentheses
+                if (Regex.IsMatch(tokenList[i], lpPattern))
+                {
+                    lpCount++;
+                    lpFlag = true;
+                }
+                //Checks for closing parentheses
+                else if (Regex.IsMatch(tokenList[i], rpPattern))
+                {
+                    rpCount++;
+                    rpFlag = true;
+                }
+                //Checks for math operators
+                else if (Regex.IsMatch(tokenList[i], opPattern))
+                {
+                    opFlag = true;
+                }
+                //Checks for variable token
+                else if (Regex.IsMatch(tokenList[i], varPattern))
+                {
+                    varFlag = true;
+                }
+                //Checks for double literals
+                else if (Double.TryParse(tokenList[i], out double result))
+                {
+                    doubleFlag = true;
+                }
+                else
+                {
+                    throw new FormulaFormatException("This is an invalid token");
+                }
+            }
         }
         /// <summary>
         /// Evaluates this Formula, using the Lookup delegate to determine the values of variables.  (The
