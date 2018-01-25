@@ -37,7 +37,7 @@ namespace Formulas
         /// </summary>
         /// 
 
-        private List<string> tokenList;
+        private List<string> tokenList = new List<string>();
 
         bool lpFlag = false;
         bool rpFlag = false;
@@ -72,6 +72,22 @@ namespace Formulas
                 throw new FormulaFormatException("Must contain a valid token");
             }
 
+            if (tokenList.Count == 1)
+            {
+                if (Regex.IsMatch(tokenList[0], doublePattern) || Regex.IsMatch(tokenList[0], varPattern))
+                {
+                    Formula form = new Formula(formula);
+                }
+                else
+                {
+                    throw new FormulaFormatException("This is an invalid token");
+                }
+            }
+            else if(tokenList.Count == 2)
+            {
+
+
+            }
             //Check the first token if its valid
             if (Regex.IsMatch(tokenList[0], doublePattern) || Regex.IsMatch(tokenList[0], varPattern) || Regex.IsMatch(tokenList[0], lpPattern))
             {
@@ -172,7 +188,7 @@ namespace Formulas
                     varFlag = true;
                 }
                 //Checks for double literals
-                else if (Regex.IsMatch(tokenList[i], doublePattern))
+                else if (Double.TryParse(tokenList[i], out double result))
                 {
                     doubleFlag = true;
                 }
