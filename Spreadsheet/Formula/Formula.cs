@@ -265,11 +265,14 @@ namespace Formulas
                     if (opStack.Count != 0 && opStack.Peek().Equals("*"))
                     {
                         result = valStack.Pop() * numTemp;
+                        opStack.Pop();
                         valStack.Push(result);
                     }
                     else if (opStack.Count != 0 && opStack.Peek().Equals("/"))
                     {
                         result = valStack.Pop() / numTemp;
+                        opStack.Pop();
+
                         if (result == 0)
                         {
                             throw new FormulaEvaluationException("A division by zero is not allowed");
