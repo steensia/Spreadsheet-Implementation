@@ -125,6 +125,10 @@ namespace Formulas
                     lpFlag = true;
                     lpCount++;
                 }
+                else
+                {
+                    throw new FormulaFormatException("The first token must be a number, variable, or opening parenthesis");
+                }
 
                 for (int i = 1; i < tokenList.Count; i++)
                 {
@@ -272,7 +276,7 @@ namespace Formulas
                         result = valStack.Pop() / numTemp;
                         opStack.Pop();
 
-                        if (result == 0)
+                        if (result == 0 || numTemp == 0)
                         {
                             throw new FormulaEvaluationException("A division by zero is not allowed");
                         }
@@ -338,7 +342,16 @@ namespace Formulas
                     }
                     else if (opStack.Count != 0 && opStack.Peek().Equals("/"))
                     {
-                        double result2 = valStack.Pop() / valStack.Pop();
+                        double result2 = valStack.Pop();
+                        if (valStack.Peek() == 0)
+                        {
+                            throw new FormulaEvaluationException("A division by zero is not allowed");
+                        }
+                        else
+                        {
+                            result2 = result2 / valStack.Pop();
+                        }
+
                         opStack.Pop();
 
                         if (result2 == 0)

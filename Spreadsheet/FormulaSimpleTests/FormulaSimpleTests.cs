@@ -238,6 +238,14 @@ namespace FormulaTestCases
             f.Evaluate(x => 0);
         }
 
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct21()
+        {
+            Formula f = new Formula("-10 + x");
+        }
+
         /// <summary>
         /// Makes sure that "2+3" evaluates to 5.  Since the Formula
         /// contains no variables, the delegate passed in as the
@@ -300,6 +308,15 @@ namespace FormulaTestCases
             Formula f = new Formula("(x + y) * (z / x) * 1.0");
             Assert.AreEqual(f.Evaluate(Lookup4), 20.0, 1e-6);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluate6()
+        {
+            Formula f = new Formula("5 / x5");
+            Assert.AreEqual(f.Evaluate(v => 0), 22.5, 1e-6);
+        }
+
 
         /// <summary>
         /// A Lookup method that maps x to 4.0, y to 6.0, and z to 8.0.
