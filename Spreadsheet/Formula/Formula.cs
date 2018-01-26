@@ -224,7 +224,7 @@ namespace Formulas
                     throw new FormulaFormatException("The number of opening parenthesis should equal closing parenthesis");
                 }
                 //If the last token is invalid, throw an exception
-                if (Regex.IsMatch(tokenList[tokenList.Count - 1], opPattern) || Regex.IsMatch(tokenList[tokenList.Count - 1], rpPattern))
+                if (!(Double.TryParse(tokenList[tokenList.Count - 1], out double numTempThree) || Regex.IsMatch(tokenList[tokenList.Count - 1], varPattern) || Regex.IsMatch(tokenList[tokenList.Count - 1], rpPattern)))
                 {
                     throw new FormulaFormatException("The last token must be a number, variable, or closing parenthesis");
                 }

@@ -351,6 +351,13 @@ namespace FormulaTestCases
             Assert.AreEqual(f.Evaluate(v => 0), 1.0, 1e-6);
         }
 
+        [TestMethod]
+        public void Evaluate8()
+        {
+            Formula f = new Formula("(x + y) * (z / x)");
+            Assert.AreEqual(f.Evaluate(Lookup4), 20.0, 1e-6);
+        }
+
 
         /// <summary>
         /// A Lookup method that maps x to 4.0, y to 6.0, and z to 8.0.
