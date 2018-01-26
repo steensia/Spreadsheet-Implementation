@@ -194,7 +194,7 @@ namespace Formulas
                         }
                     }
                     //The if checks determine valid tokens, and the corresponding token flag is activated to ensure
-                    //valid tokens follow after.
+                    //subsequent tokens are valid.
                     if (Regex.IsMatch(tokenList[i], lpPattern))
                     {
                         lpCount++;
@@ -326,8 +326,8 @@ namespace Formulas
                     opStack.Push(t);
                 }
 
-                //If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once
-                //Apply the popped operator to the popped numbers. Push the result onto the value stack.
+                //When token is a closing parenthesis check if + or - is at the top of the operator stack, pop the value stack twice 
+                //and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.
                 else if (Regex.IsMatch(t, rpPattern))
                 {
                     if (opStack.Count != 0 && opStack.Peek().Equals("+"))
