@@ -1,4 +1,4 @@
-﻿// Written by Joe Zachary for CS 3500, January 2017.
+﻿// Written by Joe Zachary for CS 3500, January 2017
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

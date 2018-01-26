@@ -1,4 +1,5 @@
 ﻿// Skeleton written by Joe Zachary for CS 3500, January 2017
+// Steen Sia, 1/25/18
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,15 @@ namespace Formulas
     /// </summary>
     public class Formula
     {
+        //instance variable(s)
+        private List<string> tokenList = new List<string>();
+
+        //Constants 
+        const String lpPattern = @"\(";
+        const String rpPattern = @"\)";
+        const String opPattern = @"[\+\-*/]";
+        const String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
+
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
         /// from non-negative floating-point numbers (using C#-like syntax for double/int literals), 
@@ -36,26 +46,21 @@ namespace Formulas
         /// explanatory Message.
         /// </summary>
         /// 
-
-        private List<string> tokenList = new List<string>();
-        const String lpPattern = @"\(";
-        const String rpPattern = @"\)";
-        const String opPattern = @"[\+\-*/]";
-        const String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
-
         public Formula(String formula)
         {
+            //Boolean variables to go into respective conditions
             bool lpFlag = false;
             bool rpFlag = false;
             bool opFlag = false;
             bool varFlag = false;
             bool doubleFlag = false;
 
+            //Open and closing parenthesis counters to keep track of equality
             int lpCount = 0;
             int rpCount = 0;
 
+            //Storing each token in IEnumerable to a List so easier to keep track of size.
             var temp = GetTokens(formula);
-
             foreach (string token in temp)
             {
                 tokenList.Add(token);
@@ -75,18 +80,23 @@ namespace Formulas
                     throw new FormulaFormatException("This is an invalid token");
                 }
             }
+
             //Condition for only two tokens
             else if (tokenList.Count == 2)
             {
+                //First token must be a number or variable
                 if (Double.TryParse(tokenList[0], out double numTemp) || Regex.IsMatch(tokenList[0], varPattern))
                 {
+                    //Check if the last token is invalid, then throw exception
                     if (!(Regex.IsMatch(tokenList[1], opPattern) || Regex.IsMatch(tokenList[1], rpPattern)))
                     {
                         throw new FormulaFormatException("This is an invalid token");
                     }
                 }
+                //First token can be an opening parenthesis
                 else if (Regex.IsMatch(tokenList[0], lpPattern))
                 {
+                    ////Check if the last token is invalid, then throw exception
                     if (!(Double.TryParse(tokenList[1], out double numTempFour) || Regex.IsMatch(tokenList[1], varPattern) || Regex.IsMatch(tokenList[1], lpPattern)))
                     {
                         throw new FormulaFormatException("This is an invalid token");
@@ -101,7 +111,7 @@ namespace Formulas
             else if (tokenList.Count > 2)
             {
 
-                //Check the first token if its valid
+                //Check the first token if its a number, variable, or open parenthesis
                 if (Double.TryParse(tokenList[0], out double numTempTwo))
                 {
                     doubleFlag = true;
@@ -120,6 +130,7 @@ namespace Formulas
                     throw new FormulaFormatException("The first token must be a number, variable, or opening parenthesis");
                 }
 
+                //Loop through the rest of the tokens and look for invalid tokens
                 for (int i = 1; i < tokenList.Count; i++)
                 {
                     //A token following an open parenthesis must be a number, variable, or open parenthesis
@@ -182,39 +193,37 @@ namespace Formulas
                             throw new FormulaFormatException("This is an invalid token");
                         }
                     }
-                        //Checks for opening parentheses
-                        if (Regex.IsMatch(tokenList[i], lpPattern))
-                        {
-                            lpCount++;
-                            lpFlag = true;
-                        }
-                        //Checks for closing parentheses
-                        if (Regex.IsMatch(tokenList[i], rpPattern))
-                        {
-                            rpCount++;
-                            rpFlag = true;
-                        }
-                        //Checks for math operators
-                        if (Regex.IsMatch(tokenList[i], opPattern))
-                        {
-                            opFlag = true;
-                        }
-                        //Checks for variable token
-                        if (Regex.IsMatch(tokenList[i], varPattern))
-                        {
-                            varFlag = true;
-                        }
-                        //Checks for double literals
-                        if (Double.TryParse(tokenList[i], out double numTemp))
-                        {
-                            doubleFlag = true;
-                        }
+                    //The if checks determine valid tokens, and the corresponding token flag is activated to ensure
+                    //valid tokens follow after.
+                    if (Regex.IsMatch(tokenList[i], lpPattern))
+                    {
+                        lpCount++;
+                        lpFlag = true;
+                    }
+                    if (Regex.IsMatch(tokenList[i], rpPattern))
+                    {
+                        rpCount++;
+                        rpFlag = true;
+                    }
+                    if (Regex.IsMatch(tokenList[i], opPattern))
+                    {
+                        opFlag = true;
+                    }
+                    if (Regex.IsMatch(tokenList[i], varPattern))
+                    {
+                        varFlag = true;
+                    }
+                    if (Double.TryParse(tokenList[i], out double numTemp))
+                    {
+                        doubleFlag = true;
+                    }
                 }
-                //Equal number of parentheses in the formula   
+                //Tokens with parenthesis must have equality
                 if (lpCount != rpCount)
                 {
                     throw new FormulaFormatException("The number of opening parenthesis should equal closing parenthesis");
                 }
+                //If the last token is invalid, throw an exception
                 if (Regex.IsMatch(tokenList[tokenList.Count - 1], opPattern) || Regex.IsMatch(tokenList[tokenList.Count - 1], rpPattern))
                 {
                     throw new FormulaFormatException("The last token must be a number, variable, or closing parenthesis");
@@ -232,11 +241,16 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
+            //Create two stacks to store values and operators
             Stack<double> valStack = new Stack<double>();
             Stack<string> opStack = new Stack<string>();
 
+            //Loop through to see if the expression can be evaluated
             foreach (string t in tokenList)
             {
+                // If the token is a number or a variable, check if * or / is at the top of the operator stack, pop 
+                // the value stack, pop the operator stack, and apply the popped operator to t and the popped number. 
+                // Push the result onto the value stack. Otherwise, push t onto the value stack
                 if (Double.TryParse(t, out double numTemp) || Regex.IsMatch(t, varPattern))
                 {
                     double result;
@@ -274,6 +288,9 @@ namespace Formulas
                         valStack.Push(numTemp);
                     }
                 }
+
+                // If + is at the top of the operator stack, pop the value stack twice and the operator stack once.  Apply the popped operator 
+                // to the popped numbers. Push the result onto the value stack. Push t onto the operator stack, regardless of first step
                 else if (t.Equals("+"))
                 {
                     if (opStack.Count != 0 && opStack.Peek().Equals("+"))
@@ -285,6 +302,8 @@ namespace Formulas
                     }
                     opStack.Push(t);
                 }
+                // If - is at the top of the operator stack, pop the value stack twice and the operator stack once.  Apply the popped operator 
+                // to the popped numbers. Push the result onto the value stack. Push t onto the operator stack, regardless of first step
                 else if (t.Equals("-"))
                 {
                     if (opStack.Count != 0 && opStack.Peek().Equals("-"))
@@ -296,14 +315,19 @@ namespace Formulas
                     }
                     opStack.Push(t);
                 }
+                //Simply push multiply or divide operators to operator stack
                 else if (t.Equals("*") || t.Equals("/"))
                 {
                     opStack.Push(t);
                 }
+                //Push opening parenthesis to operator stack
                 else if (Regex.IsMatch(t, lpPattern))
                 {
                     opStack.Push(t);
                 }
+
+                //If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once
+                //Apply the popped operator to the popped numbers. Push the result onto the value stack.
                 else if (Regex.IsMatch(t, rpPattern))
                 {
                     if (opStack.Count != 0 && opStack.Peek().Equals("+"))
@@ -318,9 +342,13 @@ namespace Formulas
                         opStack.Pop();
                         valStack.Push(result);
                     }
-                    
+
+                    //The top of operator stack will be opening parenthesis, just pop out of stack
                     opStack.Pop();
 
+
+                    //if * or / is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                    //Apply the popped operator to the popped numbers. Push the result onto the value stack.
                     if (opStack.Count != 0 && opStack.Peek().Equals("*"))
                     {
                         double result2 = valStack.Pop() * valStack.Pop();
@@ -349,10 +377,14 @@ namespace Formulas
                     }
                 }
             }
+            // After the tokens have been process, if the operator stack is empty
+            // Return the only number in the value stack
             if (opStack.Count < 1)
             {
                 return valStack.Pop();
             }
+            // If operator stack is not empty, the operator is a + or - and there are two values in
+            // the value stack. Just pop all tokens and return the result as the value of the expression.
             else
             {
                 if (opStack.Count != 0 && opStack.Peek().Equals("+"))
