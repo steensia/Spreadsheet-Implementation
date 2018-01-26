@@ -87,12 +87,166 @@ namespace FormulaTestCases
         }
 
         /// <summary>
+        /// Checking closing parenthesis issues.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct8()
+        {
+            Formula f = new Formula("( 2 + 3 ) 2 + 2 ) + ( 4 + 5 ) + ( 7");
+            f.Evaluate(x => 0);
+
+        }
+
+        /// <summary>
+        /// Checking parenthesis with a value.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct9()
+        {
+            Formula f = new Formula("(1)2");
+            f.Evaluate(x => 0);
+
+        }
+
+        /// <summary>
+        /// Checking empty entry.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct10()
+        {
+
+            Formula f = new Formula("");
+            f.Evaluate(x => 0);
+
+        }
+
+        /// <summary>
+        /// Testing two numbers in sucession.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct11()
+        {
+            Formula f = new Formula("(1 + 2) (1)");
+            f.Evaluate(x => 0);
+
+        }
+        /// <summary>
+        /// Check long invalid name
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct12()
+        {
+            Formula f = new Formula("Bill_123");
+            f.Evaluate(x => 0);
+
+        }
+
+        /// <summary>
+        /// Testing just a single operator insert
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct13()
+        {
+            Formula f = new Formula("+");
+            f.Evaluate(x => 0);
+        }
+
+        /// <summary>
+        /// Testing digit on the left hand side of an opening parenthesis.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct14()
+        {
+            Formula f = new Formula("2(1)");
+            f.Evaluate(x => 0);
+
+        }
+
+        /// <summary>
+        /// Testing open parenthesis and operator
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct15()
+        {
+            Formula f = new Formula("()");
+            f.Evaluate(x => 0);
+        }
+
+        /// <summary>
+        /// Testing double operators
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct16()
+        {
+            Formula f = new Formula("+");
+            f.Evaluate(x => 0);
+
+        }
+        /// <summary>
+        /// Testing split variable name with no operator between
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct17()
+        {
+            Formula f = new Formula("bob hey");
+            f.Evaluate(x => 0);
+
+        }
+
+        /// <summary>
+        /// Checking for unequal amounts of paranthesis.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct18()
+        {
+            Formula f = new Formula("((2+2)");
+            f.Evaluate(x => 0);
+
+        }
+
+        /// <summary>
+        /// Greater amounts of closing paranthesis.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct19()
+        {
+            Formula f = new Formula("(1 + 2) + 3)");
+            f.Evaluate(x => 0);
+
+        }
+
+        /// <summary>
+        /// Checking last token not digit / var / or closing paren
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct20()
+        {
+            Formula f = new Formula("2 + 2 *");
+            f.Evaluate(x => 0);
+        }
+
+        /// <summary>
         /// Makes sure that "2+3" evaluates to 5.  Since the Formula
         /// contains no variables, the delegate passed in as the
         /// parameter doesn't matter.  We are passing in one that
         /// maps all variables to zero.
         /// </summary>
         [TestMethod]
+
+
         public void Evaluate1()
         {
             Formula f = new Formula("2+3");

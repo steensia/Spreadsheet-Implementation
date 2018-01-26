@@ -188,7 +188,7 @@ namespace Formulas
                             throw new FormulaFormatException("This is an invalid token");
                         }
                     }
-                    if (i != tokenList.Count)
+                    if (i < tokenList.Count)
                     {
                         //Checks for opening parentheses
                         if (Regex.IsMatch(tokenList[i], lpPattern))
@@ -217,17 +217,16 @@ namespace Formulas
                         {
                             doubleFlag = true;
                         }
-                        //Ensures that the closing parentheses should not exceed the number of opening parentheses
-                        //if (lpCount != 0 && rpCount > lpCount)
-                        //{
-                        //    throw new FormulaFormatException("This is an invalid token");
-                        //}
                     }
                 }
                 //Equal number of parentheses in the formula   
                 if (lpCount != rpCount)
                 {
-                    throw new FormulaFormatException("Must contain at least one token");
+                    throw new FormulaFormatException("The number of opening parenthesis should equal closing parenthesis");
+                }
+                if (Regex.IsMatch(tokenList[tokenList.Count - 1], opPattern) || Regex.IsMatch(tokenList[tokenList.Count - 1], rpPattern))
+                {
+                    throw new FormulaFormatException("The last token must be a number, variable, or closing parenthesis");
                 }
             }
         }
