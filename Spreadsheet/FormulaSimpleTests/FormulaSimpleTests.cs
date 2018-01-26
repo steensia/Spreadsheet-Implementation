@@ -181,22 +181,11 @@ namespace FormulaTestCases
         }
 
         /// <summary>
-        /// Testing double operators
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(FormulaFormatException))]
-        public void Construct16()
-        {
-            Formula f = new Formula("+");
-            f.Evaluate(x => 0);
-
-        }
-        /// <summary>
         /// Testing split variable name with no operator between
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void Construct17()
+        public void Construct16()
         {
             Formula f = new Formula("bob hey");
             f.Evaluate(x => 0);
@@ -208,7 +197,7 @@ namespace FormulaTestCases
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void Construct18()
+        public void Construct17()
         {
             Formula f = new Formula("((2+2)");
             f.Evaluate(x => 0);
@@ -220,7 +209,7 @@ namespace FormulaTestCases
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void Construct19()
+        public void Construct18()
         {
             Formula f = new Formula("(1 + 2) + 3)");
             f.Evaluate(x => 0);
@@ -232,7 +221,7 @@ namespace FormulaTestCases
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void Construct20()
+        public void Construct19()
         {
             Formula f = new Formula("2 + 2 *");
             f.Evaluate(x => 0);
@@ -241,9 +230,39 @@ namespace FormulaTestCases
 
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void Construct21()
+        public void Construct20()
         {
             Formula f = new Formula("-10 + x");
+        }
+
+        /// <summary>
+        /// Checking when opening is more than closing parenthesis
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct21()
+        {
+            Formula f = new Formula("( ( 5 )");
+        }
+
+        /// <summary>
+        /// Checking when closing is more than opening parenthesis
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct22()
+        {
+            Formula f = new Formula("( 5 ) )");
+        }
+
+        /// <summary>
+        /// Checking when closing is more than opening parenthesis
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct23()
+        {
+            Formula f = new Formula("( + )");
         }
 
         /// <summary>
@@ -315,6 +334,21 @@ namespace FormulaTestCases
         {
             Formula f = new Formula("5 / x5");
             Assert.AreEqual(f.Evaluate(v => 0), 22.5, 1e-6);
+        }
+
+        /// <summary>
+        /// Makes sure that "2-3" evaluates to -1.  Since the Formula
+        /// contains no variables, the delegate passed in as the
+        /// parameter doesn't matter.  We are passing in one that
+        /// maps all variables to zero.
+        /// </summary>
+        [TestMethod]
+
+
+        public void Evaluate7()
+        {
+            Formula f = new Formula("2-3");
+            Assert.AreEqual(f.Evaluate(v => 0), 1.0, 1e-6);
         }
 
 
