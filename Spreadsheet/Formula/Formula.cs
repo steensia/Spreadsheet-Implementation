@@ -71,11 +71,7 @@ namespace Formulas
             //Condition for only one token
             if (tokenList.Count == 1)
             {
-                if (Double.TryParse(tokenList[0], out double x) || Regex.IsMatch(tokenList[0], varPattern))
-                {
-                    Formula form = new Formula(formula);
-                }
-                else
+                if (!(Double.TryParse(tokenList[0], out double x) || Regex.IsMatch(tokenList[0], varPattern)))
                 {
                     throw new FormulaFormatException("This is an invalid token");
                 }
@@ -114,7 +110,7 @@ namespace Formulas
             //Condition for more than two tokens
             else if (tokenList.Count > 2)
             {
-                
+
                 //Check the first token if its valid
                 if (Double.TryParse(tokenList[0], out double numTempTwo))
                 {
@@ -127,15 +123,11 @@ namespace Formulas
                 else if (Regex.IsMatch(tokenList[0], lpPattern))
                 {
                     lpFlag = true;
+                    lpCount++;
                 }
 
                 for (int i = 1; i < tokenList.Count; i++)
                 {
-                    //Ensures that the closing parentheses should not exceed the number of opening parentheses
-                    if (lpCount != 0 && rpCount > lpCount)
-                    {
-                        throw new FormulaFormatException("This is an invalid token");
-                    }
                     //A token following an open parenthesis must be a number, variable, or open parenthesis
                     if (lpFlag)
                     {
@@ -225,6 +217,11 @@ namespace Formulas
                         {
                             doubleFlag = true;
                         }
+                        //Ensures that the closing parentheses should not exceed the number of opening parentheses
+                        //if (lpCount != 0 && rpCount > lpCount)
+                        //{
+                        //    throw new FormulaFormatException("This is an invalid token");
+                        //}
                     }
                 }
                 //Equal number of parentheses in the formula   
@@ -247,13 +244,14 @@ namespace Formulas
         {
             Stack<double> valStack = new Stack<double>();
             Stack<string> opStack = new Stack<string>();
+
             foreach (string t in tokenList)
             {
-                double result;
                 if (Double.TryParse(t, out double numTemp) || Regex.IsMatch(t, varPattern))
                 {
+                    double result;
                     //if variable
-                    if(Regex.IsMatch(t, varPattern))
+                    if (Regex.IsMatch(t, varPattern))
                     {
                         try
                         {
@@ -261,18 +259,18 @@ namespace Formulas
                         }
                         catch
                         {
-                            throw new UndefinedVariableException("This is not a valid variable");
+                            throw new FormulaEvaluationException("This cannot be evaluated");
                         }
                     }
-                    if (opStack.Peek().Equals("*"))
+                    if (opStack.Count != 0 && opStack.Peek().Equals("*"))
                     {
                         result = valStack.Pop() * numTemp;
                         valStack.Push(result);
                     }
-                    else if(opStack.Peek().Equals("/"))
+                    else if (opStack.Count != 0 && opStack.Peek().Equals("/"))
                     {
                         result = valStack.Pop() / numTemp;
-                        if(result == 0)
+                        if (result == 0)
                         {
                             throw new FormulaEvaluationException("A division by zero is not allowed");
                         }
@@ -285,27 +283,27 @@ namespace Formulas
                 }
                 else if (t.Equals("+"))
                 {
-                    if(opStack.Peek().Equals("+"))
-                        {
-                        double result2 = valStack.Pop() + valStack.Pop();
+                    if (opStack.Count != 0 && opStack.Peek().Equals("+"))
+                    {
+                        double result = valStack.Pop() + valStack.Pop();
                         opStack.Pop();
 
-                        valStack.Push(result2);
-                        opStack.Push(t);
-                        }
+                        valStack.Push(result);
+                    }
+                    opStack.Push(t);
                 }
                 else if (t.Equals("-"))
                 {
-                    if (opStack.Peek().Equals("-"))
+                    if (opStack.Count != 0 && opStack.Peek().Equals("-"))
                     {
-                        double result2 = valStack.Pop() + valStack.Pop();
+                        double result = valStack.Pop() + valStack.Pop();
                         opStack.Pop();
 
-                        valStack.Push(result2);
-                        opStack.Push(t);
+                        valStack.Push(result);
                     }
+                    opStack.Push(t);
                 }
-                else if(t.Equals("*") || t.Equals("/"))
+                else if (t.Equals("*") || t.Equals("/"))
                 {
                     opStack.Push(t);
                 }
@@ -315,39 +313,38 @@ namespace Formulas
                 }
                 else if (Regex.IsMatch(t, rpPattern))
                 {
-                    if(opStack.Peek().Equals("+"))
+                    if (opStack.Count != 0 && opStack.Peek().Equals("+"))
                     {
-                        double result2 = valStack.Pop() + valStack.Pop();
+                        double result = valStack.Pop() + valStack.Pop();
                         opStack.Pop();
+                        valStack.Push(result);
+                    }
+                    else if (opStack.Count != 0 && opStack.Peek().Equals("-"))
+                    {
+                        double result = valStack.Pop() - valStack.Pop();
+                        opStack.Pop();
+                        valStack.Push(result);
+                    }
+                    
+                    opStack.Pop();
 
+                    if (opStack.Count != 0 && opStack.Peek().Equals("*"))
+                    {
+                        double result2 = valStack.Pop() * valStack.Pop();
+                        opStack.Pop();
                         valStack.Push(result2);
+                    }
+                    else if (opStack.Count != 0 && opStack.Peek().Equals("/"))
+                    {
+                        double result2 = valStack.Pop() / valStack.Pop();
                         opStack.Pop();
 
-                        if(opStack.Peek().Equals("*"))
+                        if (result2 == 0)
                         {
-                            double result3 = valStack.Pop() * valStack.Pop();
-                            opStack.Pop();
-                            valStack.Push(result3);
+                            throw new FormulaEvaluationException("A division by zero is not allowed");
                         }
-                        else if (opStack.Peek().Equals("/"))
-                        {
-                            double result3 = valStack.Pop() / valStack.Pop();
-                            opStack.Pop();
-                            valStack.Push(result3);
-                        }
-                        else
-                        {
-                            throw new FormulaEvaluationException("Cannot evaluate this expression");
-                        }
+                        valStack.Push(result2);
                     }
-                    else
-                    {
-                        throw new FormulaEvaluationException("Cannot evaluate this expression");
-                    }
-                }
-                else
-                {
-                    throw new FormulaEvaluationException("Cannot evaluate this expression");
                 }
             }
             if (opStack.Count < 1)
@@ -356,11 +353,11 @@ namespace Formulas
             }
             else
             {
-                if(opStack.Peek().Equals("+"))
+                if (opStack.Count != 0 && opStack.Peek().Equals("+"))
                 {
                     return valStack.Pop() + valStack.Pop();
                 }
-                else if (opStack.Peek().Equals("-"))
+                else if (opStack.Count != 0 && opStack.Peek().Equals("-"))
                 {
                     return valStack.Pop() - valStack.Pop();
                 }
