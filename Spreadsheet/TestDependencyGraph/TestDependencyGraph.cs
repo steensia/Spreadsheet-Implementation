@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dependencies;
-
+using System.Collections.Generic;
 
 namespace TestDependencyGraph
 {
@@ -12,6 +12,8 @@ namespace TestDependencyGraph
     [TestClass]
     public class TestDependencyGraph
     {
+        // HasDependents Tests
+
         /// <summary>
         /// Check if HasDependents throws a null exception
         /// </summary>
@@ -22,6 +24,8 @@ namespace TestDependencyGraph
             DependencyGraph graph = new DependencyGraph();
             graph.HasDependents(null);
         }
+
+        // HasDependees Tests
 
         /// <summary>
         /// Check if HasDependees throws a null exception
@@ -34,6 +38,8 @@ namespace TestDependencyGraph
             graph.HasDependees(null);
         }
 
+        // GetDependents Tests
+
         /// <summary>
         /// Check if GetDependents throws a null exception
         /// </summary>
@@ -45,6 +51,8 @@ namespace TestDependencyGraph
             graph.GetDependents(null);
         }
 
+        // GetDependees Tests
+
         /// <summary>
         /// Check if GetDependees throws a null exception
         /// </summary>
@@ -55,6 +63,8 @@ namespace TestDependencyGraph
             DependencyGraph graph = new DependencyGraph();
             graph.GetDependees(null);
         }
+
+        // AddDependency Tests
 
         /// <summary>
         /// Check if AddDependency throws a null exception to first argument
@@ -101,6 +111,8 @@ namespace TestDependencyGraph
             graph.AddDependency("s", "t");
         }
 
+        // RemoveDependency Tests
+
         /// <summary>
         /// Check if RemoveDependency throws a null exception to first argument
         /// </summary>
@@ -145,6 +157,8 @@ namespace TestDependencyGraph
             graph.RemoveDependency("s", "t");
         }
 
+        // RemoveDependents Tests
+
         /// <summary>
         /// Check if RemoveDependents deals throw null exception to first argument
         /// </summary>
@@ -153,6 +167,66 @@ namespace TestDependencyGraph
         public void RemoveDependentsNull1()
         {
             DependencyGraph graph = new DependencyGraph();
+            List<string> newDependents = new List<string>();
+            graph.ReplaceDependents(null, newDependents);
+        }
+
+        /// <summary>
+        /// Check if RemoveDependents deals throw null exception to second argument
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void RemoveDependentsNull2()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.ReplaceDependents("s", null);
+        }
+
+        /// <summary>
+        /// Check if RemoveDependents deals throw null exception to both arguments
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void RemoveDependentsNull3()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.ReplaceDependents(null, null);
+        }
+
+        // RemoveDependees Tests
+
+        /// <summary>
+        /// Check if RemoveDependees deals throw null exception to first argument
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void RemoveDependeesNull1()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            List<string> newDependees = new List<string>();
+            graph.ReplaceDependees(null, newDependees);
+        }
+
+        /// <summary>
+        /// Check if RemoveDependees deals throw null exception to second argument
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void RemoveDependeesNull2()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.ReplaceDependees("s", null);
+        }
+
+        /// <summary>
+        /// Check if RemoveDependees deals throw null exception to both arguments
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void RemoveDependeesNull3()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.ReplaceDependees(null, null);
         }
     }
 }
