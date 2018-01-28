@@ -68,6 +68,10 @@ namespace Dependencies
         /// </summary>
         public bool HasDependents(string s)
         {
+            if (s == null)
+            {
+                throw new ArgumentNullException();
+            }
             return false;
         }
 
@@ -76,6 +80,10 @@ namespace Dependencies
         /// </summary>
         public bool HasDependees(string s)
         {
+            if (s == null)
+            {
+                throw new ArgumentNullException();
+            }
             return false;
         }
 
@@ -84,6 +92,10 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
+            if (s == null)
+            {
+                throw new ArgumentNullException();
+            }
             return null;
         }
 
@@ -92,6 +104,10 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
+            if (s == null)
+            {
+                throw new ArgumentNullException();
+            }
             return null;
         }
 
@@ -102,6 +118,10 @@ namespace Dependencies
         /// </summary>
         public void AddDependency(string s, string t)
         {
+            if (s == null || t == null)
+            {
+                throw new ArgumentNullException();
+            }
         }
 
         /// <summary>
@@ -111,6 +131,10 @@ namespace Dependencies
         /// </summary>
         public void RemoveDependency(string s, string t)
         {
+            if (s == null || t == null)
+            {
+                throw new ArgumentNullException();
+            }
         }
 
         /// <summary>
@@ -120,6 +144,10 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+            if (s == null || newDependents == null)
+            {
+                throw new ArgumentNullException();
+            }
         }
 
         /// <summary>
@@ -129,6 +157,10 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
+            if (t == null || newDependees == null)
+            {
+                throw new ArgumentNullException();
+            }
         }
     }
 }
