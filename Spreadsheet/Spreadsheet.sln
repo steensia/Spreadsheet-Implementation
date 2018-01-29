@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyGraph", "DependencyGraph\DependencyGraph.csproj", "{862EAD85-346F-4D2B-A53C-98074FF813BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDependencyGraph", "TestDependencyGraph\TestDependencyGraph.csproj", "{61905E69-866A-4C76-9D42-5F354697AF54}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyGraphTestCases", "TestDependencyGraph\DependencyGraphTestCases.csproj", "{61905E69-866A-4C76-9D42-5F354697AF54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

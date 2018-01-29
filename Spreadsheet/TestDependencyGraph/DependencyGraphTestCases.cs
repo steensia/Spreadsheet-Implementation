@@ -10,8 +10,31 @@ namespace TestDependencyGraph
     /// of a DependencyGraph is met.
     /// </summary>
     [TestClass]
-    public class TestDependencyGraph
+    public class DependencyGraphTestCases
     {
+        // Size test
+
+        /// <summary>
+        /// Check if size method returns 0 in an empty dependency graph
+        /// </summary>
+        [TestMethod]
+        public void SizeWithNoDependency()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            Assert.AreEqual(0, graph.Size, 1e-6);
+        }
+
+        /// <summary>
+        /// Check if size method returns 0 in an empty dependency graph
+        /// </summary>
+        [TestMethod]
+        public void SizeWithDependencies()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.AddDependency("s", "t");
+            Assert.AreEqual(1, graph.Size, 1e-6);
+        }
+
         // HasDependents Tests
 
         /// <summary>
