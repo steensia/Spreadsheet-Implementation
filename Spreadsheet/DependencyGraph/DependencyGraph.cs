@@ -50,8 +50,9 @@ namespace Dependencies
     public class DependencyGraph
     {
         // Field
-        private Dictionary<String, String> test = new Dictionary<string, string>();
-        private List<string> test2 = new List<string>();
+        private Dictionary<String, String> myDictionary = new Dictionary<string, string>();
+        private List<string> keyList = new List<string>();
+        private List<string> valueList = new List<string>();
 
         /// <summary>
         /// Creates a DependencyGraph containing no dependencies.
@@ -65,7 +66,7 @@ namespace Dependencies
         /// </summary>
         public int Size
         {
-            get { return test.Count; }
+            get { return myDictionary.Count; }
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if(test.ContainsKey(s))
+            if(myDictionary.ContainsKey(s))
             {
                 return true;
             }
@@ -93,7 +94,7 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if (test.ContainsValue(s))
+            if (myDictionary.ContainsValue(s))
             {
                 return true;
             }
@@ -105,18 +106,22 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            
             if (s == null)
             {
                 throw new ArgumentNullException();
             }
-            else
+            else if(myDictionary.ContainsKey(s))
             {
-                foreach (string n in test.Keys)
+                foreach(KeyValuePair<string,string> entry in myDictionary)
                 {
-                    test2.Add(n);
+                    
                 }
-                return test2;
+                //foreach (string n in HashMap.Keys)
+                //{
+                //    test2.Add(n);
+                //}
+                //return test2;
+                
             }
         }
 
@@ -131,11 +136,11 @@ namespace Dependencies
             }
             else
             {
-               foreach(string n in test.Values)
+               foreach(string n in myDictionary.Values)
                 {
-                    test2.Add(n);
+                    dependentList.Add(n);
                 }
-                return test2;
+                return dependentList;
             }
         }
 
@@ -152,7 +157,7 @@ namespace Dependencies
             }
             else
             {
-                test.Add(s, t);
+                myDictionary.Add(s, t);
             }
         }
 
