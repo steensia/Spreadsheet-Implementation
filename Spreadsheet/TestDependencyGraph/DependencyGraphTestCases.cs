@@ -48,6 +48,28 @@ namespace TestDependencyGraph
             graph.HasDependents(null);
         }
 
+        /// <summary>
+        /// Check if dependent is in the DependencyGraph
+        /// </summary>
+        [TestMethod]
+        public void HasDependent_Yes()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.AddDependency("s", "t");
+            Assert.AreEqual(true, graph.HasDependents("s"));
+        }
+
+        /// <summary>
+        /// Check if dependent is not in the DependencyGraph
+        /// </summary>
+        [TestMethod]
+        public void HasDependent_No()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.AddDependency("u", "v");
+            Assert.AreEqual(false, graph.HasDependents("y"));
+        }
+
         // HasDependees Tests
 
         /// <summary>
@@ -61,6 +83,29 @@ namespace TestDependencyGraph
             graph.HasDependees(null);
         }
 
+
+        /// <summary>
+        /// Check if dependees is in the DependencyGraph
+        /// </summary>
+        [TestMethod]
+        public void HasDependees_Yes()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.AddDependency("s", "t");
+            Assert.AreEqual(true, graph.HasDependees("t"));
+        }
+
+        /// <summary>
+        /// Check if dependees is not in the DependencyGraph
+        /// </summary>
+        [TestMethod]
+        public void HasDependees_No()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.AddDependency("u", "v");
+            Assert.AreEqual(false, graph.HasDependees("x"));
+        }
+
         // GetDependents Tests
 
         /// <summary>
@@ -72,6 +117,24 @@ namespace TestDependencyGraph
         {
             DependencyGraph graph = new DependencyGraph();
             graph.GetDependents(null);
+        }
+
+        /// <summary>
+        /// Check if GetDependents returns dependents
+        /// </summary>
+        [TestMethod]
+        public void GetDependentsTwoDependents()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            List<String> test = new List<string>();
+            graph.AddDependency("s", "1");
+            graph.AddDependency("s", "2");
+            foreach(string n in graph.GetDependents("s"))
+            {
+                test.Add(n);
+            }
+            Assert.AreEqual("s", test[0]);
+            Assert.AreEqual("s", test[1]);
         }
 
         // GetDependees Tests

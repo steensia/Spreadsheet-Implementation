@@ -49,6 +49,10 @@ namespace Dependencies
     /// </summary>
     public class DependencyGraph
     {
+        // Field
+        private Dictionary<String, String> test = new Dictionary<string, string>();
+        private List<string> test2 = new List<string>();
+
         /// <summary>
         /// Creates a DependencyGraph containing no dependencies.
         /// </summary>
@@ -61,7 +65,7 @@ namespace Dependencies
         /// </summary>
         public int Size
         {
-            get { return 0; }
+            get { return test.Count; }
         }
 
         /// <summary>
@@ -72,6 +76,10 @@ namespace Dependencies
             if (s == null)
             {
                 throw new ArgumentNullException();
+            }
+            if(test.ContainsKey(s))
+            {
+                return true;
             }
             return false;
         }
@@ -85,6 +93,10 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
+            if (test.ContainsValue(s))
+            {
+                return true;
+            }
             return false;
         }
 
@@ -93,11 +105,19 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
+            
             if (s == null)
             {
                 throw new ArgumentNullException();
             }
-            return null;
+            else
+            {
+                foreach (string n in test.Keys)
+                {
+                    test2.Add(n);
+                }
+                return test2;
+            }
         }
 
         /// <summary>
@@ -109,7 +129,14 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            return null;
+            else
+            {
+               foreach(string n in test.Values)
+                {
+                    test2.Add(n);
+                }
+                return test2;
+            }
         }
 
         /// <summary>
@@ -122,6 +149,10 @@ namespace Dependencies
             if (s == null || t == null)
             {
                 throw new ArgumentNullException();
+            }
+            else
+            {
+                test.Add(s, t);
             }
         }
 
