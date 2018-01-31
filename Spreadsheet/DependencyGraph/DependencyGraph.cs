@@ -186,7 +186,20 @@ namespace Dependencies
                 throw new ArgumentNullException();
             }
             if(parentList.ContainsKey(s))
-            {
+            { 
+                foreach(string child in parentList[s])
+                {
+                    childList[child].Remove(s);
+                    if(childList[child].Count < 0)
+                    {
+                        childList.Remove(child);
+                    }
+                }
+                parentList[s].Clear();
+                foreach(string newChild in newDependents)
+                {
+                    parentList[s].Add(newChild);
+                }
             }
         }
 
@@ -200,6 +213,22 @@ namespace Dependencies
             if (t == null || newDependees == null)
             {
                 throw new ArgumentNullException();
+            }
+            if (childList.ContainsKey(t))
+            {
+                foreach (string parent in childList[t])
+                {
+                    parentList[parent].Remove(t);
+                    if (parentList[parent].Count < 0)
+                    {
+                        parentList.Remove(parent);
+                    }
+                }
+                childList[t].Clear();
+                foreach (string newParent in newDependees)
+                {
+                    childList[t].Add(newParent);
+                }
             }
         }
     }
