@@ -50,9 +50,8 @@ namespace Dependencies
     public class DependencyGraph
     {
         // Field
-        private Dictionary<String, String> myDictionary = new Dictionary<string, string>();
-        private List<string> keyList = new List<string>();
-        private List<string> valueList = new List<string>();
+        private Dictionary<String, HashSet<string>>  parentList= new Dictionary<string, HashSet<string>>();
+        private Dictionary<String, HashSet<string>> childList = new Dictionary<string, HashSet<string>>();
 
         /// <summary>
         /// Creates a DependencyGraph containing no dependencies.
@@ -66,7 +65,7 @@ namespace Dependencies
         /// </summary>
         public int Size
         {
-            get { return myDictionary.Count; }
+            get { return parentList.Count; }
         }
 
         /// <summary>
@@ -78,11 +77,11 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if(myDictionary.ContainsKey(s))
+            if(parentList[s].Count > 0)
             {
                 return true;
             }
-            return false;
+                return false;
         }
 
         /// <summary>
@@ -94,11 +93,11 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if (myDictionary.ContainsValue(s))
+            if (childList[s].Count > 0)
             {
                 return true;
             }
-            return false;
+                return false;
         }
 
         /// <summary>
@@ -110,19 +109,7 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            else if(myDictionary.ContainsKey(s))
-            {
-                foreach(KeyValuePair<string,string> entry in myDictionary)
-                {
-                    
-                }
-                //foreach (string n in HashMap.Keys)
-                //{
-                //    test2.Add(n);
-                //}
-                //return test2;
-                
-            }
+                return parentList[s];
         }
 
         /// <summary>
@@ -134,14 +121,7 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            else
-            {
-               foreach(string n in myDictionary.Values)
-                {
-                    dependentList.Add(n);
-                }
-                return dependentList;
-            }
+            return childList[s];
         }
 
         /// <summary>
@@ -155,9 +135,21 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            else
+            else if(s != null && t != null)
             {
-                myDictionary.Add(s, t);
+                //If it contains the dependent, add 
+                if(parentList.ContainsKey(s))
+                {
+                    parentList[s].Add(t);
+                    childList[t].Add(s);
+                }
+                else
+                {
+                    parentList.Add(s, new HashSet<string>());
+                    parentList[s].Add(t);
+                    childList.Add(t, new HashSet<string>());
+                    childList[t].Add(s);
+                }
             }
         }
 
@@ -172,6 +164,14 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
+            if (s != null && t != null)
+            {
+                if (parentList.ContainsKey(s))
+                {
+                    parentList[s].Remove(t);
+                    childList[t].Remove(s);
+                }
+            }
         }
 
         /// <summary>
@@ -184,6 +184,9 @@ namespace Dependencies
             if (s == null || newDependents == null)
             {
                 throw new ArgumentNullException();
+            }
+            if(parentList.ContainsKey(s))
+            {
             }
         }
 
