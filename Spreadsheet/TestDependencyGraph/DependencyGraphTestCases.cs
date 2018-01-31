@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dependencies;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TestDependencyGraph
 {
@@ -52,7 +53,7 @@ namespace TestDependencyGraph
         /// Check if dependent is in the DependencyGraph
         /// </summary>
         [TestMethod]
-        public void HasDependent_Yes()
+        public void HasDependentValidEntry()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.AddDependency("s", "t");
@@ -63,7 +64,7 @@ namespace TestDependencyGraph
         /// Check if dependent is not in the DependencyGraph
         /// </summary>
         [TestMethod]
-        public void HasDependent_No()
+        public void HasDependentInvalidEntry()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.AddDependency("u", "v");
@@ -83,12 +84,11 @@ namespace TestDependencyGraph
             graph.HasDependees(null);
         }
 
-
         /// <summary>
         /// Check if dependees is in the DependencyGraph
         /// </summary>
         [TestMethod]
-        public void HasDependees_Yes()
+        public void HasDependeesValidEntry()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.AddDependency("s", "t");
@@ -99,7 +99,7 @@ namespace TestDependencyGraph
         /// Check if dependees is not in the DependencyGraph
         /// </summary>
         [TestMethod]
-        public void HasDependees_No()
+        public void HasDependeesInvalidEntry()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.AddDependency("u", "v");
@@ -109,7 +109,7 @@ namespace TestDependencyGraph
         // GetDependents Tests
 
         /// <summary>
-        /// Check if GetDependents throws a null exception
+        /// Check if GetDependents throws a null exception with null input
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -123,18 +123,15 @@ namespace TestDependencyGraph
         /// Check if GetDependents returns dependents
         /// </summary>
         [TestMethod]
-        public void GetDependentsTwoDependents()
+        public void GetDependentsTwoValidDependents()
         {
             DependencyGraph graph = new DependencyGraph();
-            List<String> test = new List<string>();
+            List<string> childList = new List<string>();
             graph.AddDependency("s", "1");
             graph.AddDependency("s", "2");
-            foreach(string n in graph.GetDependents("s"))
-            {
-                test.Add(n);
-            }
-            Assert.AreEqual("s", test[0]);
-            Assert.AreEqual("s", test[1]);
+            childList = graph.GetDependents("s").ToList();
+            Assert.AreEqual("1", childList[0]);
+            Assert.AreEqual("2", childList[1]);
         }
 
         // GetDependees Tests
@@ -189,12 +186,13 @@ namespace TestDependencyGraph
         /// Check if AddDependency deals with a duplicate dependency
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void AddDependencyDuplicate()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.AddDependency("s", "t");
             graph.AddDependency("s", "t");
+            graph.AddDependency("s", "p");
+            Assert.AreEqual(2, graph.Size);
         }
 
         // RemoveDependency Tests
@@ -236,11 +234,11 @@ namespace TestDependencyGraph
         /// Check if RemoveDependency deals with non-existent dependency
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void RemoveDependencyInvalidDependency()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.RemoveDependency("s", "t");
+            Assert.AreEqual(0, graph.Size);
         }
 
         // RemoveDependents Tests

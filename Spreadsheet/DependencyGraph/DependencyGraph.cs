@@ -52,6 +52,7 @@ namespace Dependencies
         // Field
         private Dictionary<String, HashSet<string>>  parentList= new Dictionary<string, HashSet<string>>();
         private Dictionary<String, HashSet<string>> childList = new Dictionary<string, HashSet<string>>();
+        private int counter;
 
         /// <summary>
         /// Creates a DependencyGraph containing no dependencies.
@@ -65,7 +66,7 @@ namespace Dependencies
         /// </summary>
         public int Size
         {
-            get { return parentList.Count; }
+            get { return counter; }
         }
 
         /// <summary>
@@ -77,11 +78,14 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if(parentList[s].Count > 0)
+            if (parentList.ContainsKey(s))
             {
-                return true;
+                if (parentList[s].Count > 0)
+                {
+                    return true;
+                }
             }
-                return false;
+            return false;
         }
 
         /// <summary>
@@ -93,11 +97,14 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if (childList[s].Count > 0)
+            if (childList.ContainsKey(s))
             {
-                return true;
+                if (childList[s].Count > 0)
+                {
+                    return true;
+                }
             }
-                return false;
+            return false;
         }
 
         /// <summary>
@@ -135,20 +142,25 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            else if(s != null && t != null)
+            if(s != null && t != null)
             {
-                //If it contains the dependent, add 
-                if(parentList.ContainsKey(s))
+                //Add the parent if parent exists and child does not exist
+                if (parentList.ContainsKey(s) && !(childList.ContainsKey(t)))
                 {
                     parentList[s].Add(t);
-                    childList[t].Add(s);
+                    if(childList.ContainsKey(t) && !((parentList.ContainsKey(s))))
+                    {
+                        childList[t].Add(s);
+                    }
+                    counter++;
                 }
-                else
+                if (!(parentList.ContainsKey(s)))
                 {
                     parentList.Add(s, new HashSet<string>());
                     parentList[s].Add(t);
                     childList.Add(t, new HashSet<string>());
                     childList[t].Add(s);
+                    counter++;
                 }
             }
         }
@@ -187,19 +199,24 @@ namespace Dependencies
             }
             if(parentList.ContainsKey(s))
             { 
+                //Remove link with parent for each child
                 foreach(string child in parentList[s])
                 {
                     childList[child].Remove(s);
+                    //If there is no link for the child, simply remove
                     if(childList[child].Count < 0)
                     {
                         childList.Remove(child);
                     }
                 }
+                //Clear all the children for this parent
                 parentList[s].Clear();
+                //Add in the new children for this parent
                 foreach(string newChild in newDependents)
                 {
                     parentList[s].Add(newChild);
                 }
+
             }
         }
 
@@ -216,6 +233,7 @@ namespace Dependencies
             }
             if (childList.ContainsKey(t))
             {
+                //Remove link with child for each parent
                 foreach (string parent in childList[t])
                 {
                     parentList[parent].Remove(t);
@@ -229,6 +247,19 @@ namespace Dependencies
                 {
                     childList[t].Add(newParent);
                 }
+            }
+        }
+        /// <summary>
+        /// Used to report syntactic errors in the parameter to the Formula constructor.
+        /// </summary>
+        [Serializable]
+        public class FormulaFormatException : Exception
+        {
+            /// <summary>
+            /// Constructs a FormulaFormatException containing the explanatory message.
+            /// </summary>
+            public FormulaFormatException(String message) : base(message)
+            {
             }
         }
     }
