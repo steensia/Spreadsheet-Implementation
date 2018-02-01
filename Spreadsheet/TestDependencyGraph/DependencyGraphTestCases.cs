@@ -123,7 +123,7 @@ namespace TestDependencyGraph
         /// Check if GetDependents returns dependents
         /// </summary>
         [TestMethod]
-        public void GetDependentsTwoValidDependents()
+        public void GetDependentsTwoValidParents()
         {
             DependencyGraph graph = new DependencyGraph();
             List<string> childList = new List<string>();
@@ -134,7 +134,85 @@ namespace TestDependencyGraph
             Assert.AreEqual("2", childList[1]);
         }
 
+        /// <summary>
+        /// Check if GetDependents returns dependents with 100_000 entries
+        /// </summary>
+        [TestMethod]
+        public void GetDependentsStressTest1()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            List<string> parentList = new List<string>();
+            for(int i = 0; i < 100_000; i++)
+            {
+                graph.AddDependency("s", "" + i);
+            }
+            parentList = graph.GetDependents("s").ToList();
+            for(int i = 0; i < 100_000; i++)
+            {
+                Assert.AreEqual("" + i, parentList[i]);
+            }
+        }
+
+        /// <summary>
+        /// Check if GetDependents returns dependents with 100_000 entries
+        /// </summary>
+        [TestMethod]
+        public void GetDependentsStressTest2()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            List<string> parentList = new List<string>();
+            for (int i = 0; i < 50_000; i++)
+            {
+                graph.AddDependency("s", "" + i);
+            }
+            graph.AddDependency("a", "b");
+            for (int i = 50_0001; i < 100_000; i++)
+            {
+                graph.AddDependency("s", "" + i);
+            }
+            parentList = graph.GetDependents("s").ToList();
+            //for (int i = 0; i < 100_000; i++)
+            //{
+            //    Assert.AreEqual("" + i, parentList[i]);
+            //}
+            Assert.AreEqual(true, graph.HasDependents("a"));
+            Assert.AreEqual(true, graph.HasDependees("b"));
+        }
+
         // GetDependees Tests
+
+        /// <summary>
+        /// Check if GetDependents returns dependents with 100_000 entries
+        /// </summary>
+        [TestMethod]
+        public void GetDependeesStressTest1()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            List<string> childList = new List<string>();
+            for (int i = 0; i < 100_000; i++)
+            {
+                graph.AddDependency("" + i, "s");
+            }
+            childList = graph.GetDependees("s").ToList();
+            for (int i = 0; i < 100_000; i++)
+            {
+                Assert.AreEqual("" + i, childList[i]);
+            }
+        }
+        /// <summary>
+        /// Check if GetDependents returns dependents
+        /// </summary>
+        [TestMethod]
+        public void GetDependeesTwoValidChildren()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            List<string> childList = new List<string>();
+            graph.AddDependency("s", "1");
+            graph.AddDependency("t", "1");
+            childList = graph.GetDependees("1").ToList();
+            Assert.AreEqual("s", childList[0]);
+            Assert.AreEqual("t", childList[1]);
+        }
 
         /// <summary>
         /// Check if GetDependees throws a null exception
@@ -195,6 +273,60 @@ namespace TestDependencyGraph
             Assert.AreEqual(2, graph.Size);
         }
 
+        /// <summary>
+        /// Check if AddDependency deals with a duplicate dependency
+        /// </summary>
+        [TestMethod]
+        public void AddDependencySameChild()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.AddDependency("s", "t");
+            graph.AddDependency("p", "t");
+            Assert.AreEqual(2, graph.Size);
+        }
+
+        /// <summary>
+        /// Check if AddDependency deals with a duplicate dependency
+        /// </summary>
+        [TestMethod]
+        public void AddDependencyXD()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.AddDependency("s", "t");
+            graph.AddDependency("p", "t");
+            graph.AddDependency("r", "o");
+            graph.AddDependency("r", "w");
+            Assert.AreEqual(4, graph.Size);
+        }
+
+        /// <summary>
+        /// Check if AddDependency deals with 100,000 dependencies using same parent
+        /// </summary>
+        [TestMethod]
+        public void AddDependencyStressTest1()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            for (int i = 0; i < 100_000; i++)
+            {
+                graph.AddDependency("s", "" + i);
+            }
+            Assert.AreEqual(100_000, graph.Size);
+        }
+
+        /// <summary>
+        /// Check if AddDependency deals with 100,000 dependencies using same child
+        /// </summary>
+        [TestMethod]
+        public void AddDependencyStressTest2()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            for (int i = 0; i < 100_000; i++)
+            {
+                graph.AddDependency("" + i, "t");
+            }
+            Assert.AreEqual(100_000, graph.Size);
+        }
+
         // RemoveDependency Tests
 
         /// <summary>
@@ -241,14 +373,14 @@ namespace TestDependencyGraph
             Assert.AreEqual(0, graph.Size);
         }
 
-        // RemoveDependents Tests
+        // ReplaceDependents Tests
 
         /// <summary>
-        /// Check if RemoveDependents deals throw null exception to first argument
+        /// Check if ReplaceDependents deals throw null exception to first argument
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void RemoveDependentsNull1()
+        public void ReplaceDependentsNull1()
         {
             DependencyGraph graph = new DependencyGraph();
             List<string> newDependents = new List<string>();
@@ -260,7 +392,7 @@ namespace TestDependencyGraph
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void RemoveDependentsNull2()
+        public void ReplaceDependentsNull2()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.ReplaceDependents("s", null);
@@ -271,20 +403,20 @@ namespace TestDependencyGraph
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void RemoveDependentsNull3()
+        public void ReplaceDependentsNull3()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.ReplaceDependents(null, null);
         }
 
-        // RemoveDependees Tests
+        // ReplaceDependees Tests
 
         /// <summary>
         /// Check if RemoveDependees deals throw null exception to first argument
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void RemoveDependeesNull1()
+        public void ReplaceDependeesNull1()
         {
             DependencyGraph graph = new DependencyGraph();
             List<string> newDependees = new List<string>();
@@ -296,7 +428,7 @@ namespace TestDependencyGraph
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void RemoveDependeesNull2()
+        public void ReplaceDependeesNull2()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.ReplaceDependees("s", null);
@@ -307,7 +439,7 @@ namespace TestDependencyGraph
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void RemoveDependeesNull3()
+        public void ReplaceDependeesNull3()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.ReplaceDependees(null, null);

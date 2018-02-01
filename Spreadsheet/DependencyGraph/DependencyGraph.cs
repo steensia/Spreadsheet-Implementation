@@ -116,7 +116,7 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-                return parentList[s];
+                return new HashSet<string>(parentList[s]);
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            return childList[s];
+            return new HashSet<string>(childList[s]);
         }
 
         /// <summary>
@@ -144,17 +144,28 @@ namespace Dependencies
             }
             if(s != null && t != null)
             {
-                //Add the parent if parent exists and child does not exist
+                //If parent already exists, add child
                 if (parentList.ContainsKey(s) && !(childList.ContainsKey(t)))
                 {
                     parentList[s].Add(t);
-                    if(childList.ContainsKey(t) && !((parentList.ContainsKey(s))))
+                    if (childList.ContainsKey(t) && !((parentList.ContainsKey(s))))
                     {
-                        childList[t].Add(s);
+                       childList[t].Add(s);  
                     }
                     counter++;
                 }
-                if (!(parentList.ContainsKey(s)))
+                //If child already exists, add parent
+                else if (childList.ContainsKey(t) && !(parentList.ContainsKey(s)))
+                {
+                    childList[t].Add(s);
+                    if (parentList.ContainsKey(s) && !((parentList.ContainsKey(t))))
+                    {
+                        parentList[s].Add(t);
+                    }
+                    counter++;
+                }
+                //Create new lists and add new Dependency
+                else if(!(parentList.ContainsKey(s)) && !(childList.ContainsKey(t)))
                 {
                     parentList.Add(s, new HashSet<string>());
                     parentList[s].Add(t);
@@ -216,7 +227,6 @@ namespace Dependencies
                 {
                     parentList[s].Add(newChild);
                 }
-
             }
         }
 
@@ -247,19 +257,6 @@ namespace Dependencies
                 {
                     childList[t].Add(newParent);
                 }
-            }
-        }
-        /// <summary>
-        /// Used to report syntactic errors in the parameter to the Formula constructor.
-        /// </summary>
-        [Serializable]
-        public class FormulaFormatException : Exception
-        {
-            /// <summary>
-            /// Constructs a FormulaFormatException containing the explanatory message.
-            /// </summary>
-            public FormulaFormatException(String message) : base(message)
-            {
             }
         }
     }
