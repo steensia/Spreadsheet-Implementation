@@ -447,6 +447,22 @@ namespace TestDependencyGraph
         // ReplaceDependents Tests
 
         /// <summary>
+        /// Check if ReplaceDependency removes dependency
+        /// </summary>
+        [TestMethod]
+        public void ReplaceDependencyValidDependency()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            HashSet<string> temp = new HashSet<string>();
+            temp.Add("s");
+            graph.AddDependency("s", "t");
+            graph.ReplaceDependents("s", temp);
+            DependencyGraph graph2 = new DependencyGraph();
+            graph2.AddDependency("s", "s");
+            //Assert.Equals(graph, graph2);
+        }
+
+        /// <summary>
         /// Check if ReplaceDependents deals throw null exception to first argument
         /// </summary>
         [TestMethod]
@@ -480,29 +496,31 @@ namespace TestDependencyGraph
             graph.ReplaceDependents(null, null);
         }
 
+        
+
         /// <summary>
         /// Check if ReplaceDependents replaces existing children with new ones.
         /// </summary>
         [TestMethod]
-        public void ReplaceDependentsValidEntry()
+        public void ReplaceDependentsStressTest1()
         {
             DependencyGraph graph = new DependencyGraph();
-            DependencyGraph temp = graph;
+            DependencyGraph temp = new DependencyGraph();
+            DependencyGraph temp2 = new DependencyGraph();
             HashSet<string> newChildren = new HashSet<string>();
-            
+
             //Generate new children to replace existing children
-            for (int i = 0; i < 10; i++)
+            //Generate a DependencyGraph with same parent
+            //Generate a DependencyGraph with the children to replace
+            for (int i = 0; i < 5; i++)
             {
                 newChildren.Add("i" + i);
+                graph.AddDependency("s", "c" + i);
+                temp.AddDependency("s", "i" + i);
+                temp2.AddDependency("ss", "" + i);
             }
-
-            //Generate dependencies with same parent
-            for (int i = 0; i < 10; i++)
-            {
-                graph.AddDependency("s", "" + i);
-            }
-
             graph.ReplaceDependents("s", newChildren);
+            Assert.AreEqual(graph, temp);
         }
 
 

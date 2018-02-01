@@ -242,7 +242,7 @@ namespace Dependencies
                 {
                     childList[child].Remove(s);
                     //If there is no link for the child, simply remove
-                    if(childList[child].Count < 0)
+                    if(childList.Count < 1)
                     {
                         childList.Remove(child);
                     }
