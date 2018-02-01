@@ -99,7 +99,7 @@ namespace Dependencies
             }
             if (childList.ContainsKey(s))
             {
-                if (childList[s].Count > 0)
+                if (childList[s].Count > 0) 
                 {
                     return true;
                 }
@@ -144,6 +144,10 @@ namespace Dependencies
             }
             if(s != null && t != null)
             {
+                if (parentList.ContainsKey(s) && childList.ContainsKey(t))
+                {
+                    return;
+                }
                 //If parent already exists, add child
                 if (parentList.ContainsKey(s))
                 {
@@ -199,10 +203,23 @@ namespace Dependencies
             }
             if (s != null && t != null)
             {
-                if (parentList.ContainsKey(s))
+                if(parentList.ContainsKey(s) && childList.ContainsKey(t))
                 {
                     parentList[s].Remove(t);
                     childList[t].Remove(s);
+                    if(parentList.Count < 1)
+                    {
+                        parentList.Remove(s);
+                    }
+                    if(childList.Count < 1)
+                    {
+                        childList.Remove(t);
+                    }
+                    counter--;
+                }
+                else
+                {
+                    return;
                 }
             }
         }

@@ -269,7 +269,7 @@ namespace TestDependencyGraph
             DependencyGraph graph = new DependencyGraph();
             graph.AddDependency("s", "t");
             graph.AddDependency("s", "t");
-            graph.AddDependency("s", "p");
+            graph.AddDependency("v", "v");
             Assert.AreEqual(2, graph.Size);
         }
 
@@ -286,10 +286,10 @@ namespace TestDependencyGraph
         }
 
         /// <summary>
-        /// Check if AddDependency deals with a duplicate dependency
+        /// Check if AddDependency deals with a duplicate parent and child.
         /// </summary>
         [TestMethod]
-        public void AddDependencyXD()
+        public void AddDependencySameParentAndChild()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.AddDependency("s", "t");
@@ -373,6 +373,77 @@ namespace TestDependencyGraph
             Assert.AreEqual(0, graph.Size);
         }
 
+        /// <summary>
+        /// Check if RemoveDependency removes dependency
+        /// </summary>
+        [TestMethod]
+        public void RemoveDependencyValidDependency()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            graph.AddDependency("s", "t");
+            graph.RemoveDependency("s", "t");
+            Assert.AreEqual(0, graph.Size);
+        }
+
+        /// <summary>
+        /// Check if RemoveDependency can remove 100,000 dependencies with same parent
+        /// </summary>
+        [TestMethod]
+        public void RemoveDependencyStressTest1()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            for (int i = 0; i < 100_000; i++)
+            {
+                graph.AddDependency("s", "" + i);
+            }
+            for (int i = 0; i < 100_000; i++)
+            {
+                graph.RemoveDependency("s", "" + i);
+            }
+            Assert.AreEqual(0, graph.Size);
+        }
+
+        /// <summary>
+        /// Check if RemoveDependency can remove 100,000 dependencies with same child
+        /// </summary>
+        [TestMethod]
+        public void RemoveDependencyStressTest2()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            for (int i = 0; i < 100_000; i++)
+            {
+                graph.AddDependency("s" + i, "t");
+            }
+            for (int i = 0; i < 100_000; i++)
+            {
+                graph.RemoveDependency("s" + i, "t");
+            }
+            Assert.AreEqual(0, graph.Size);
+        }
+
+        /// <summary>
+        /// Check if RemoveDependency can remove half of 100_000 dependencies and 
+        /// ignore non-existent dependencies
+        /// </summary>
+        [TestMethod]
+        public void RemoveDependencyStressTest3()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            for (int i = 0; i < 100_000; i++)
+            {
+                graph.AddDependency("s", "" + i);
+            }
+            for (int i = 0; i < 50_000; i++)
+            {
+                graph.RemoveDependency("s", "" + i);
+            }
+            for (int i = 50_000; i < 100_000; i++)
+            {
+                graph.RemoveDependency("s", "" + i + "x");
+            }
+            Assert.AreEqual(50_000, graph.Size);
+        }
+
         // ReplaceDependents Tests
 
         /// <summary>
@@ -383,7 +454,7 @@ namespace TestDependencyGraph
         public void ReplaceDependentsNull1()
         {
             DependencyGraph graph = new DependencyGraph();
-            List<string> newDependents = new List<string>();
+            HashSet<string> newDependents = new HashSet<string>();
             graph.ReplaceDependents(null, newDependents);
         }
 
@@ -408,6 +479,33 @@ namespace TestDependencyGraph
             DependencyGraph graph = new DependencyGraph();
             graph.ReplaceDependents(null, null);
         }
+
+        /// <summary>
+        /// Check if ReplaceDependents replaces existing children with new ones.
+        /// </summary>
+        [TestMethod]
+        public void ReplaceDependentsValidEntry()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            DependencyGraph temp = graph;
+            HashSet<string> newChildren = new HashSet<string>();
+            
+            //Generate new children to replace existing children
+            for (int i = 0; i < 10; i++)
+            {
+                newChildren.Add("i" + i);
+            }
+
+            //Generate dependencies with same parent
+            for (int i = 0; i < 10; i++)
+            {
+                graph.AddDependency("s", "" + i);
+            }
+
+            graph.ReplaceDependents("s", newChildren);
+        }
+
+
 
         // ReplaceDependees Tests
 
