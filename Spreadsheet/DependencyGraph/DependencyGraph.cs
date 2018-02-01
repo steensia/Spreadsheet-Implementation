@@ -145,21 +145,31 @@ namespace Dependencies
             if(s != null && t != null)
             {
                 //If parent already exists, add child
-                if (parentList.ContainsKey(s) && !(childList.ContainsKey(t)))
+                if (parentList.ContainsKey(s))
                 {
                     parentList[s].Add(t);
-                    if (childList.ContainsKey(t) && !((parentList.ContainsKey(s))))
+                    if (childList.ContainsKey(t))
                     {
                        childList[t].Add(s);  
+                    }
+                    else
+                    {
+                        childList.Add(t, new HashSet<string>());
+                        childList[t].Add(s);
                     }
                     counter++;
                 }
                 //If child already exists, add parent
-                else if (childList.ContainsKey(t) && !(parentList.ContainsKey(s)))
+                else if (childList.ContainsKey(t))
                 {
                     childList[t].Add(s);
-                    if (parentList.ContainsKey(s) && !((parentList.ContainsKey(t))))
+                    if (parentList.ContainsKey(s))
                     {
+                        parentList[s].Add(t);
+                    }
+                    else
+                    {
+                        parentList.Add(s, new HashSet<string>());
                         parentList[s].Add(t);
                     }
                     counter++;
