@@ -668,6 +668,21 @@ namespace TestDependencyGraph
         }
 
         /// <summary>
+        /// Check if ReplaceDependents ignores null dependent
+        /// </summary>
+        [TestMethod]
+        public void ReplaceDependentsCheckWhenListContainsNull()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            HashSet<string> newDependents = new HashSet<string>();
+            newDependents.Add(null);
+            newDependents.Add("x");
+            graph.AddDependency("a", "b");
+            graph.ReplaceDependents("a", newDependents);
+            Assert.AreEqual(1, graph.Size);
+        }
+
+        /// <summary>
         /// Check if ReplaceDependents replaces existing children with new ones.
         /// </summary>
         [TestMethod]
@@ -742,6 +757,39 @@ namespace TestDependencyGraph
             }
         }
 
+        /// <summary>
+        /// Check if ReplaceDependee ignores null dependees inside 100_000 elements
+        /// and size decreases if null values are inside the list.
+        /// </summary>
+        [TestMethod]
+        public void ReplaceDependentsStressTest4()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            List<string> newDependents = new List<string>();
+            for (int i = 0; i < 100_000; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    newDependents.Add(null);
+                }
+                else
+                {
+                    newDependents.Add("a" + i);
+                }
+                graph.AddDependency("c", "b" + i);
+            }
+            graph.ReplaceDependents("c", newDependents);
+            HashSet<string> temp = new HashSet<string>(graph.GetDependents("c"));
+            for (int i = 0; i < 50_000; i++)
+            {
+                if (i % 2 != 0)
+                {
+                    Assert.AreEqual(true, temp.Contains("a" + i));
+                }
+            }
+            //Assert.AreEqual(50_000, graph.Size);
+        }
+
         // ReplaceDependees Tests
 
         /// <summary>
@@ -807,6 +855,21 @@ namespace TestDependencyGraph
             newDependees.Add("e");
             graph.AddDependency("s", "t");
             graph.ReplaceDependees("t", newDependees);
+            Assert.AreEqual(1, graph.Size);
+        }
+
+        /// <summary>
+        /// Check if ReplaceDependee ignores null dependee
+        /// </summary>
+        [TestMethod]
+        public void ReplaceDependeesCheckWhenListContainsNull()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            HashSet<string> newDependees = new HashSet<string>();
+            newDependees.Add(null);
+            newDependees.Add("x");
+            graph.AddDependency("a", "b");
+            graph.ReplaceDependents("b", newDependees);
             Assert.AreEqual(1, graph.Size);
         }
 
@@ -883,6 +946,39 @@ namespace TestDependencyGraph
             {
                 Assert.AreEqual(true, temp.Contains("r" + i));
             }
+        }
+
+        /// <summary>
+        /// Check if ReplaceDependee ignores null dependees inside 100_000 elements
+        /// and size decreases if null values are inside the list.
+        /// </summary>
+        [TestMethod]
+        public void ReplaceDependeesStressTest4()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            List<string> newDependees = new List<string>();
+            for (int i = 0; i < 100_000; i ++)
+            {
+                if ( i % 2 == 0)
+                {
+                    newDependees.Add(null);
+                }
+                else
+                {
+                    newDependees.Add("a" + i);
+                }
+                graph.AddDependency("b" + i, "q");
+            }
+            graph.ReplaceDependees("q", newDependees);
+            HashSet<string> temp = new HashSet<string>(graph.GetDependees("q"));
+            for (int i = 0; i < 50_000; i++)
+            {
+                if ( i % 2 != 0)
+                {
+                    Assert.AreEqual(true, temp.Contains("a" + i));
+                }
+            }
+            //Assert.AreEqual(50_000, graph.Size);
         }
     }
 }

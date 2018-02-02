@@ -262,10 +262,18 @@ namespace Dependencies
                     {
                         break;
                     }
-                    parentList[s].Add(newChild);
-                    childList.Add(newChild, new HashSet<string>());
-                    childList[newChild].Add(s);
-                    parentCount++;
+                    // Ignores null dependents
+                    if (newChild == null)
+                    {
+                        counter--;
+                    }
+                    else
+                    { 
+                        parentList[s].Add(newChild);
+                        childList.Add(newChild, new HashSet<string>());
+                        childList[newChild].Add(s);
+                        parentCount++;
+                    }
                 }
             }
         }
@@ -307,10 +315,18 @@ namespace Dependencies
                     {
                         break;
                     }
-                    childList[t].Add(newParent);
-                    parentList.Add(newParent, new HashSet<string>());
-                    parentList[newParent].Add(t);
-                    childCount++;
+                    // Ignores null dependees
+                    if (newParent == null)
+                    {
+                        counter--;
+                    }
+                    else
+                    {
+                        childList[t].Add(newParent);
+                        parentList.Add(newParent, new HashSet<string>());
+                        parentList[newParent].Add(t);
+                        childCount++;
+                    }
                 }
             }
         }
