@@ -118,7 +118,12 @@ namespace Dependencies
                 throw new ArgumentNullException();
             }
             // Return a new HashSet that contained the list of dependents
-            return new HashSet<string>(parentList[s]);
+            if (parentList.ContainsKey(s))
+            {
+                return new HashSet<string>(parentList[s]);
+            }
+            // If doesn't exist, just return empty enumeration
+            return new HashSet<string>();
         }
 
         /// <summary>
@@ -131,7 +136,12 @@ namespace Dependencies
                 throw new ArgumentNullException();
             }
             // Return a new HashSet that contained the list of dependees
-            return new HashSet<string>(childList[s]);
+            if (childList.ContainsKey(s))
+            {
+                return new HashSet<string>(childList[s]);
+            }
+            // If doesn't exist, just return empty enumeration
+            return new HashSet<string>();
         }
 
         /// <summary>
