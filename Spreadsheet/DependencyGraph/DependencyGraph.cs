@@ -1,4 +1,5 @@
 ﻿// Skeleton implementation written by Joe Zachary for CS 3500, January 2018.
+// Steen Sia @ February 1, 2018
 
 using System;
 using System.Collections.Generic;
@@ -49,9 +50,13 @@ namespace Dependencies
     /// </summary>
     public class DependencyGraph
     {
-        // Field
+        // Fields
+
+        // Utilizing Dictionaries which are HashTable/HashMap equivalent in Java which offer constant time for search, insert, and delete
         private Dictionary<String, HashSet<string>> parentList = new Dictionary<string, HashSet<string>>();
         private Dictionary<String, HashSet<string>> childList = new Dictionary<string, HashSet<string>>();
+
+        // Keep track of size
         private int counter;
 
         /// <summary>
@@ -78,12 +83,10 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if (parentList.ContainsKey(s))
+            // Checks if dependee exists, then see if it has at least one dependent
+            if (parentList.ContainsKey(s) && parentList[s].Count > 0)
             {
-                if (parentList[s].Count > 0)
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
@@ -97,12 +100,10 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if (childList.ContainsKey(s))
+            // Checks if dependent exists, then see if it has at least one dependee
+            if (childList.ContainsKey(s) && childList[s].Count > 0)
             {
-                if (childList[s].Count > 0)
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
@@ -116,6 +117,7 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
+            // Return a new HashSet that contained the list of dependents
             return new HashSet<string>(parentList[s]);
         }
 
@@ -128,6 +130,7 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
+            // Return a new HashSet that contained the list of dependees
             return new HashSet<string>(childList[s]);
         }
 
@@ -142,51 +145,37 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if (s != null && t != null)
+            // Does nothing if user adds duplicate
+            if (parentList.ContainsKey(s) && childList.ContainsKey(t))
             {
-                if (parentList.ContainsKey(s) && childList.ContainsKey(t))
-                {
-                    return;
-                }
-                //If parent already exists, add child
-                if (parentList.ContainsKey(s))
-                {
-                    parentList[s].Add(t);
-                    if (childList.ContainsKey(t))
-                    {
-                        childList[t].Add(s);
-                    }
-                    else
-                    {
-                        childList.Add(t, new HashSet<string>());
-                        childList[t].Add(s);
-                    }
-                    counter++;
-                }
-                //If child already exists, add parent
-                else if (childList.ContainsKey(t))
-                {
-                    childList[t].Add(s);
-                    if (parentList.ContainsKey(s))
-                    {
-                        parentList[s].Add(t);
-                    }
-                    else
-                    {
-                        parentList.Add(s, new HashSet<string>());
-                        parentList[s].Add(t);
-                    }
-                    counter++;
-                }
-                //Create new lists and add new Dependency
-                else if (!(parentList.ContainsKey(s)) && !(childList.ContainsKey(t)))
-                {
-                    parentList.Add(s, new HashSet<string>());
-                    parentList[s].Add(t);
-                    childList.Add(t, new HashSet<string>());
-                    childList[t].Add(s);
-                    counter++;
-                }
+                return;
+            }
+            // Check if parent exists, then just add child
+            if (parentList.ContainsKey(s))
+            {
+                // Update the parentList, childList, and size
+                parentList[s].Add(t);
+                childList.Add(t, new HashSet<string>());
+                childList[t].Add(s);
+                counter++;
+            }
+            // Check if child exists, then just add parent
+            else if (childList.ContainsKey(t))
+            {
+                // Update the childList, parentList, and size
+                childList[t].Add(s);
+                parentList.Add(s, new HashSet<string>());
+                parentList[s].Add(t);
+                counter++;
+            }
+            // Create new dependency, update each list and size
+            else
+            {
+                parentList.Add(s, new HashSet<string>());
+                parentList[s].Add(t);
+                childList.Add(t, new HashSet<string>());
+                childList[t].Add(s);
+                counter++;
             }
         }
 
@@ -201,26 +190,27 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            if (s != null && t != null)
+            // Check if dependency exists
+            if (parentList.ContainsKey(s) && childList.ContainsKey(t))
             {
-                if (parentList.ContainsKey(s) && childList.ContainsKey(t))
+                // Remove dependency from parentList and childList
+                parentList[s].Remove(t);
+                childList[t].Remove(s);
+                // Removes dependency completely if no links exist with parent or child and update size
+                if (parentList[s].Count < 1)
                 {
-                    parentList[s].Remove(t);
-                    childList[t].Remove(s);
-                    if (parentList.Count < 1)
-                    {
-                        parentList.Remove(s);
-                    }
-                    if (childList.Count < 1)
-                    {
-                        childList.Remove(t);
-                    }
-                    counter--;
+                    parentList.Remove(s);
                 }
-                else
+                if (childList[t].Count < 1)
                 {
-                    return;
+                    childList.Remove(t);
                 }
+                counter--;
+            }
+            // Dependency does not exist, simply ignore
+            else
+            {
+                return;
             }
         }
 
@@ -235,31 +225,37 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
+            // Check of the parent exists
             if (parentList.ContainsKey(s))
             {
-                //Remove link with parent for each child
+                // Remove link with parent for each child
                 foreach (string child in parentList[s])
                 {
-                        childList[child].Remove(s);
-                        //If there is no link for the child, simply remove
-                        if (childList[child].Count < 1)
-                        {
-                            childList.Remove(child);
-                        }
+                    childList[child].Remove(s);
+                    //If there is no link for the child, simply remove
+                    if (childList[child].Count < 1)
+                    {
+                        childList.Remove(child);
+                    }
                 }
                 //Clear all the children for this parent
                 parentList[s].Clear();
+
+                // Keep track of parents to avoid unnecessary links
                 int parentCount = 0;
-                //Add in the new children for this parent
+
+                // Add in the new children for this parent
                 foreach (string newChild in newDependents)
                 {
-                    if(counter == parentCount)
+                    // Dependencies have been replaced and size remains the same
+                    if (counter == parentCount)
                     {
-                        return;
+                        break;
                     }
-                        parentList[s].Add(newChild);
-                        childList.Add(newChild, new HashSet<string>());
-                        childList[newChild].Add(s);
+                    parentList[s].Add(newChild);
+                    childList.Add(newChild, new HashSet<string>());
+                    childList[newChild].Add(s);
+                    parentCount++;
                 }
             }
         }
@@ -275,9 +271,10 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
+            // Check if child exists
             if (childList.ContainsKey(t))
             {
-                //Remove link with parent for each child
+                // Remove link with child for each parent
                 foreach (string parent in childList[t])
                 {
                     parentList[parent].Remove(t);
@@ -286,14 +283,19 @@ namespace Dependencies
                         parentList.Remove(parent);
                     }
                 }
-                //Clear all the parents for this child
+                // Clear all the parents for this child
                 childList[t].Clear();
+
+                // Keep track of children to avoid unnecessary links
                 int childCount = 0;
+
+                // Add in new parents for this child
                 foreach (string newParent in newDependees)
                 {
-                    if(counter == childCount)
+                    // Dependencies have been replaced and size remains the same 
+                    if (counter == childCount)
                     {
-                        return;
+                        break;
                     }
                     childList[t].Add(newParent);
                     parentList.Add(newParent, new HashSet<string>());

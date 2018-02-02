@@ -447,20 +447,17 @@ namespace TestDependencyGraph
         // ReplaceDependents Tests
 
         /// <summary>
-        /// Check if ReplaceDependency replaces with new dependents
+        /// Check if ReplaceDependents replaces with new dependents
         /// </summary>
         [TestMethod]
-        public void ReplaceDependencyValidDependency()
+        public void ReplaceDependentsValidDependency()
         {
             DependencyGraph graph = new DependencyGraph();
-            //HashSet<string> temp = new HashSet<string>();
-            //temp.Add("f");
-            //graph.AddDependency("s", "t");
-            //graph.ReplaceDependents("s", temp);
-            DependencyGraph graph2 = new DependencyGraph();
-            graph.AddDependency("s", "f");
-            graph2.AddDependency("s", "f");
-            Assert.AreEqual(true, graph.Equals(graph2));
+            HashSet<string> temp = new HashSet<string>();
+            temp.Add("f");
+            temp.Add("x");
+            graph.AddDependency("s", "t");
+            graph.ReplaceDependents("s", temp);
         }
 
         /// <summary>
@@ -537,7 +534,6 @@ namespace TestDependencyGraph
             temp.Add("f");
             temp.Add("x");
             graph.AddDependency("s", "t");
-            //graph.AddDependency("v", "x");
             graph.ReplaceDependees("t", temp);
             DependencyGraph graph2 = new DependencyGraph();
             graph2.AddDependency("f", "t");
