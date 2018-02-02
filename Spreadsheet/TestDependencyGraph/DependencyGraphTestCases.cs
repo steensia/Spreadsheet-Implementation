@@ -22,18 +22,18 @@ namespace TestDependencyGraph
         public void SizeWithNoDependency()
         {
             DependencyGraph graph = new DependencyGraph();
-            Assert.AreEqual(0, graph.Size, 1e-6);
+            Assert.AreEqual(0, graph.Size);
         }
 
         /// <summary>
-        /// Check if size method returns 0 in an empty dependency graph
+        /// Check if size method returns 1 with one DependencyGraph
         /// </summary>
         [TestMethod]
         public void SizeWithDependencies()
         {
             DependencyGraph graph = new DependencyGraph();
             graph.AddDependency("s", "t");
-            Assert.AreEqual(1, graph.Size, 1e-6);
+            Assert.AreEqual(1, graph.Size);
         }
 
         // HasDependents Tests
@@ -447,19 +447,20 @@ namespace TestDependencyGraph
         // ReplaceDependents Tests
 
         /// <summary>
-        /// Check if ReplaceDependency removes dependency
+        /// Check if ReplaceDependency replaces with new dependents
         /// </summary>
         [TestMethod]
         public void ReplaceDependencyValidDependency()
         {
             DependencyGraph graph = new DependencyGraph();
-            HashSet<string> temp = new HashSet<string>();
-            temp.Add("s");
-            graph.AddDependency("s", "t");
-            graph.ReplaceDependents("s", temp);
+            //HashSet<string> temp = new HashSet<string>();
+            //temp.Add("f");
+            //graph.AddDependency("s", "t");
+            //graph.ReplaceDependents("s", temp);
             DependencyGraph graph2 = new DependencyGraph();
-            graph2.AddDependency("s", "s");
-            //Assert.Equals(graph, graph2);
+            graph.AddDependency("s", "f");
+            graph2.AddDependency("s", "f");
+            Assert.AreEqual(true, graph.Equals(graph2));
         }
 
         /// <summary>
@@ -475,7 +476,7 @@ namespace TestDependencyGraph
         }
 
         /// <summary>
-        /// Check if RemoveDependents deals throw null exception to second argument
+        /// Check if ReplaceDependents deals throw null exception to second argument
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -486,7 +487,7 @@ namespace TestDependencyGraph
         }
 
         /// <summary>
-        /// Check if RemoveDependents deals throw null exception to both arguments
+        /// Check if ReplaceDependents deals throw null exception to both arguments
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -523,12 +524,27 @@ namespace TestDependencyGraph
             Assert.AreEqual(graph, temp);
         }
 
-
-
         // ReplaceDependees Tests
 
         /// <summary>
-        /// Check if RemoveDependees deals throw null exception to first argument
+        /// Check if ReplaceDependees replaces with new dependees
+        /// </summary>
+        [TestMethod]
+        public void ReplaceDependeesValidDependency()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            HashSet<string> temp = new HashSet<string>();
+            temp.Add("f");
+            temp.Add("x");
+            graph.AddDependency("s", "t");
+            //graph.AddDependency("v", "x");
+            graph.ReplaceDependees("t", temp);
+            DependencyGraph graph2 = new DependencyGraph();
+            graph2.AddDependency("f", "t");
+        }
+
+        /// <summary>
+        /// Check if ReplaceDependees deals throw null exception to first argument
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -540,7 +556,7 @@ namespace TestDependencyGraph
         }
 
         /// <summary>
-        /// Check if RemoveDependees deals throw null exception to second argument
+        /// Check if ReplaceDependees deals throw null exception to second argument
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -551,7 +567,7 @@ namespace TestDependencyGraph
         }
 
         /// <summary>
-        /// Check if RemoveDependees deals throw null exception to both arguments
+        /// Check if ReplaceDependees deals throw null exception to both arguments
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
@@ -559,6 +575,6 @@ namespace TestDependencyGraph
         {
             DependencyGraph graph = new DependencyGraph();
             graph.ReplaceDependees(null, null);
+            }
         }
     }
-}
