@@ -1,4 +1,4 @@
-﻿// Steen Sia @ February 1, 2018
+﻿// Steen Sia @ February 2, 2018
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -787,7 +787,7 @@ namespace TestDependencyGraph
                     Assert.AreEqual(true, temp.Contains("a" + i));
                 }
             }
-            //Assert.AreEqual(50_000, graph.Size);
+            Assert.AreEqual(50_000, graph.Size);
         }
 
         // ReplaceDependees Tests
@@ -971,14 +971,14 @@ namespace TestDependencyGraph
             }
             graph.ReplaceDependees("q", newDependees);
             HashSet<string> temp = new HashSet<string>(graph.GetDependees("q"));
-            for (int i = 0; i < 50_000; i++)
+            for (int i = 0; i < 100_000; i++)
             {
                 if ( i % 2 != 0)
                 {
                     Assert.AreEqual(true, temp.Contains("a" + i));
                 }
             }
-            //Assert.AreEqual(50_000, graph.Size);
+            Assert.AreEqual(50_000, graph.Size);
         }
     }
 }
