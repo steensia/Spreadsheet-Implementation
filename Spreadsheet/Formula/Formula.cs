@@ -98,14 +98,6 @@ namespace Formulas
                             lpCount++;
                         }
                     }
-                    // The last token must be a number, variable, or closing parenthesis
-                    //else if (token == tokenList[tokenList.Count-1])
-                    //{
-                    //    if (!(Double.TryParse(token, out double numTemp) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, rpPattern)))
-                    //    {
-                    //        throw new FormulaFormatException("First token must be a number, variable, or closing parenthesis");
-                    //    }
-                    //}
                     else
                     {
                         if (lpFlag)
@@ -213,6 +205,7 @@ namespace Formulas
                     }
                     tokenCount++;
                 }
+                // The last token must be a number, variable, or closing parenthesis
                 if (!(Double.TryParse(tokenList[tokenList.Count - 1], out double numTemp) || Regex.IsMatch(tokenList[tokenList.Count - 1], varPattern) || Regex.IsMatch(tokenList[tokenList.Count - 1], rpPattern)))
                 {
                     throw new FormulaFormatException("First token must be a number, variable, or closing parenthesis");
