@@ -343,12 +343,10 @@ namespace FormulaTestCases
         /// maps all variables to zero.
         /// </summary>
         [TestMethod]
-
-
         public void Evaluate7()
         {
             Formula f = new Formula("2-3");
-            Assert.AreEqual(f.Evaluate(v => 0), 1.0, 1e-6);
+            Assert.AreEqual(f.Evaluate(v => 0), -1.0, 1e-6);
         }
 
         [TestMethod]

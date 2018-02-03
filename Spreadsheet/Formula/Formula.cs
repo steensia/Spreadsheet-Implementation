@@ -79,6 +79,10 @@ namespace Formulas
                 {
                     throw new FormulaFormatException("This is an invalid token");
                 }
+                if (Regex.IsMatch(tokenList[0], lpPattern) || Regex.IsMatch(tokenList[0], rpPattern))
+                {
+                    throw new FormulaFormatException("This is an invalid token");
+                }
             }
 
             //Condition for only two tokens
@@ -200,23 +204,24 @@ namespace Formulas
                         lpCount++;
                         lpFlag = true;
                     }
-                    if (Regex.IsMatch(tokenList[i], rpPattern))
+                    else if (Regex.IsMatch(tokenList[i], rpPattern))
                     {
                         rpCount++;
                         rpFlag = true;
                     }
-                    if (Regex.IsMatch(tokenList[i], opPattern))
-                    {
-                        opFlag = true;
-                    }
-                    if (Regex.IsMatch(tokenList[i], varPattern))
-                    {
-                        varFlag = true;
-                    }
-                    if (Double.TryParse(tokenList[i], out double numTemp))
+                    else if (Double.TryParse(tokenList[i], out double numTemp))
                     {
                         doubleFlag = true;
                     }
+                    else if (Regex.IsMatch(tokenList[i], opPattern))
+                    {
+                        opFlag = true;
+                    }
+                    else if (Regex.IsMatch(tokenList[i], varPattern))
+                    {
+                        varFlag = true;
+                    }
+
                 }
                 //Tokens with parenthesis must have equality
                 if (lpCount != rpCount)
@@ -255,7 +260,7 @@ namespace Formulas
                 {
                     double result;
                     //if variable
-                    if (Regex.IsMatch(t, varPattern))
+                    if (numTemp == 0 && Regex.IsMatch(t, varPattern))
                     {
                         try
                         {
@@ -300,6 +305,14 @@ namespace Formulas
 
                         valStack.Push(result);
                     }
+                    if (opStack.Count != 0 && opStack.Peek().Equals("-"))
+                    {
+                        double temp = valStack.Pop();
+                        double result = valStack.Pop() - temp;
+                        opStack.Pop();
+
+                        valStack.Push(result);
+                    }
                     opStack.Push(t);
                 }
                 // If - is at the top of the operator stack, pop the value stack twice and the operator stack once.  Apply the popped operator 
@@ -308,7 +321,15 @@ namespace Formulas
                 {
                     if (opStack.Count != 0 && opStack.Peek().Equals("-"))
                     {
-                        double result = valStack.Pop() - valStack.Pop();
+                        double temp = valStack.Pop();
+                        double result =  valStack.Pop() - temp;
+                        opStack.Pop();
+
+                        valStack.Push(result);
+                    }
+                    if (opStack.Count != 0 && opStack.Peek().Equals("+"))
+                    {
+                        double result = valStack.Pop() + valStack.Pop();
                         opStack.Pop();
 
                         valStack.Push(result);
@@ -338,7 +359,8 @@ namespace Formulas
                     }
                     else if (opStack.Count != 0 && opStack.Peek().Equals("-"))
                     {
-                        double result = valStack.Pop() - valStack.Pop();
+                        double temp = valStack.Pop();
+                        double result = valStack.Pop() - temp;
                         opStack.Pop();
                         valStack.Push(result);
                     }
@@ -393,7 +415,9 @@ namespace Formulas
                 }
                 else if (opStack.Count != 0 && opStack.Peek().Equals("-"))
                 {
-                    return valStack.Pop() - valStack.Pop();
+                    double temp = valStack.Pop();
+                    opStack.Pop();
+                    return valStack.Pop() - temp;
                 }
                 else
                 {
