@@ -257,24 +257,17 @@ namespace Dependencies
                 // Add in the new children for this parent
                 foreach (string newChild in newDependents)
                 {
-                    // Dependencies have been replaced and size remains the same
-                    if (counter == parentCount)
-                    {
-                        break;
-                    }
                     // Ignores null dependents
-                    if (newChild == null)
+                    if (newChild != null)
                     {
-                        counter--;
-                    }
-                    else
-                    { 
                         parentList[s].Add(newChild);
                         childList.Add(newChild, new HashSet<string>());
                         childList[newChild].Add(s);
                         parentCount++;
                     }
                 }
+                // Dependencies have been replaced and size remains the same
+                counter = parentCount;
             }
         }
 
@@ -310,17 +303,9 @@ namespace Dependencies
                 // Add in new parents for this child
                 foreach (string newParent in newDependees)
                 {
-                    // Dependencies have been replaced and size remains the same 
-                    if (counter == childCount)
-                    {
-                        break;
-                    }
+
                     // Ignores null dependees
-                    if (newParent == null)
-                    {
-                        counter--;
-                    }
-                    else
+                    if (newParent != null)
                     {
                         childList[t].Add(newParent);
                         parentList.Add(newParent, new HashSet<string>());
@@ -328,6 +313,8 @@ namespace Dependencies
                         childCount++;
                     }
                 }
+                // Dependencies have been replaced and size remains the same 
+                counter = childCount;
             }
         }
     }
