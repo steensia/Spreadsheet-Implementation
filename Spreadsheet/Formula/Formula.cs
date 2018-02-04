@@ -26,9 +26,9 @@ namespace Formulas
         const String opPattern = @"[\+\-*/]";
         const String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
 
-        public Formula(String formula, Normalizer N, Validator V)
+        public Formula(String f, Normalizer N, Validator V)
         {
-            List<string> tokenList = new List<string>(GetTokens(formula));
+            List<string> tokenList = new List<string>(GetTokens(f));
 
             // Boolean variables to go into respective conditions
             bool lpFlag = false;
@@ -54,6 +54,23 @@ namespace Formulas
                 // Condition for more than two tokens
                 foreach (string token in tokenList)
                 {
+                    // Check if variable is legal
+                    if (Regex.IsMatch(token, varPattern))
+                    {
+                        if(Regex.IsMatch(N(token), varPattern))
+                        {
+                            if(V(N(token)) == false)
+                            {
+                                throw new FormulaFormatException("This is not a legal variable");
+                            }
+
+                        }
+                        else
+                        {
+                            throw new FormulaFormatException("This is not a legal variable");
+                        }
+                    }
+
                     // Check if the the number closing parentheses exceed the number of opening parentheses so far
                     if (lpCount < rpCount && rpCount != 0)
                     {
@@ -62,7 +79,7 @@ namespace Formulas
                     // The first token must be a number, variable, or opening parenthesis
                     if (token == tokenList[0] && tokenCount < 1)
                     {
-                        if (!(Double.TryParse(token, out double numTemp2) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, lpPattern)))
+                        if (!(Double.TryParse(token, out double numTemp2) || Regex.IsMatch(N(token), varPattern) || Regex.IsMatch(token, lpPattern)))
                         {
                             throw new FormulaFormatException("First token must be a number, variable, or opening parenthesis");
                         }
@@ -70,7 +87,7 @@ namespace Formulas
                         {
                             doubleFlag = true;
                         }
-                        else if (Regex.IsMatch(token, varPattern))
+                        else if (Regex.IsMatch(N(token), varPattern))
                         {
                             varFlag = true;
                         }
@@ -91,7 +108,7 @@ namespace Formulas
                                 lpFlag = false;
                                 doubleFlag = true;
                             }
-                            else if (Regex.IsMatch(token, varPattern))
+                            else if (Regex.IsMatch(N(token), varPattern))
                             {
                                 lpFlag = false;
                                 doubleFlag = true;
@@ -114,7 +131,7 @@ namespace Formulas
                                 opFlag = false;
                                 doubleFlag = true;
                             }
-                            else if (Regex.IsMatch(token, varPattern))
+                            else if (Regex.IsMatch(N(token), varPattern))
                             {
                                 opFlag = false;
                                 varFlag = true;
@@ -190,7 +207,7 @@ namespace Formulas
                     tokenCount++;
                 }
                 // The last token must be a number, variable, or closing parenthesis
-                if (!(Double.TryParse(tokenList[tokenList.Count - 1], out double numTemp) || Regex.IsMatch(tokenList[tokenList.Count - 1], varPattern) || Regex.IsMatch(tokenList[tokenList.Count - 1], rpPattern)))
+                if (!(Double.TryParse(tokenList[tokenList.Count - 1], out double numTemp) || Regex.IsMatch(N(tokenList[tokenList.Count - 1]), varPattern) || Regex.IsMatch(tokenList[tokenList.Count - 1], rpPattern)))
                 {
                     throw new FormulaFormatException("First token must be a number, variable, or closing parenthesis");
                 }
@@ -200,7 +217,7 @@ namespace Formulas
                     throw new FormulaFormatException("The number of opening parentheses must match the number of closing parentheses");
                 }
             }
-            this.formula = formula;
+            this.formula = f;
         }
 
         /// <summary>
@@ -635,6 +652,28 @@ namespace Formulas
                 }
             }
         }
+
+        /// <summary>
+        /// Returns an ISet<String> that contains each distinct variable (in normalized form)
+        /// that appears in the Formula.
+        /// </summary>
+        private ISet<string> GetVariables(Normalizer N)
+        {
+            HashSet<string> Set = new HashSet<string>(GetTokens(formula));
+            foreach (string token in Set)
+            {
+                if (Regex.IsMatch(N(token), varPattern))
+                {
+
+                }
+            }
+            return new HashSet<string>();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 
     /// <summary>
@@ -647,12 +686,13 @@ namespace Formulas
     public delegate double Lookup(string var);
 
     /// <summary>
-    /// 
+    /// The purpose of a Normalizer is to convert variables into a canonical form.
     /// </summary>
     public delegate string Normalizer(string s);
 
     /// <summary>
-    /// 
+    /// The purpose of a Validator is to impose extra restrictions on the validity of a variable, 
+    /// beyond the ones already built into the Formula definition.  
     /// </summary>
     public delegate bool Validator(string s);
 
