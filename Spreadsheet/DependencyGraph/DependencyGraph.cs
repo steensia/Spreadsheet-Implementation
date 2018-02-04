@@ -266,7 +266,7 @@ namespace Dependencies
                 foreach (string newChild in newDependents)
                 {
                     // Ignores null dependents
-                    if (newChild != null && parentCount < counter)
+                    if (newChild != null)
                     {
                         AddDependency(1, parentList, childList, s, newChild);
                         parentCount++;
@@ -274,7 +274,7 @@ namespace Dependencies
                 }
 
                 // Dependencies have been replaced and size is adjusted if nulls existed
-                counter = parentCount;
+                //counter = parentCount;
             }
         }
 
@@ -313,7 +313,7 @@ namespace Dependencies
                 foreach (string newParent in newDependees)
                 {
                     // Ignores null dependees
-                    if (newParent != null && childCount < counter)
+                    if (newParent != null)
                     {
                         AddDependency(2, parentList, childList, newParent, t);
                         childCount++;
@@ -321,7 +321,7 @@ namespace Dependencies
                 }
 
                 // Dependencies have been replaced and size is adjusted if nulls existed
-                counter = childCount;
+                //counter = childCount;
             }
         }
         /// <summary>
@@ -336,6 +336,10 @@ namespace Dependencies
                 // Add child if parent already exists
                 case 1:
                     firstList[s].Add(t);
+                    if(secondList.ContainsKey(t))
+                    {
+                        secondList.Remove(t);
+                    }
                     secondList.Add(t, new HashSet<string>());
                     secondList[t].Add(s);
                     break;
@@ -343,6 +347,10 @@ namespace Dependencies
                 // Add parent if child already exists
                 case 2:
                     secondList[t].Add(s);
+                    if (firstList.ContainsKey(s))
+                    {
+                        firstList.Remove(s);
+                    }
                     firstList.Add(s, new HashSet<string>());
                     firstList[s].Add(t);
                     break;
