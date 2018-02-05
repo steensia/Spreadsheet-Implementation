@@ -336,7 +336,7 @@ namespace Dependencies
                 // Add child if parent already exists
                 case 1:
                     firstList[s].Add(t);
-                    if(secondList.ContainsKey(t))
+                    if(secondList.ContainsKey(t) && firstList[s].Count < 1)
                     {
                         secondList.Remove(t);
                     }
@@ -347,12 +347,19 @@ namespace Dependencies
                 // Add parent if child already exists
                 case 2:
                     secondList[t].Add(s);
-                    if (firstList.ContainsKey(s))
+                    if (firstList.ContainsKey(s) && firstList[s].Count < 1)
                     {
                         firstList.Remove(s);
                     }
-                    firstList.Add(s, new HashSet<string>());
-                    firstList[s].Add(t);
+                    else if (firstList.ContainsKey(s) && firstList[s].Count > 1)
+                    {
+                        firstList[s].Add(t);
+                    }
+                    else
+                    {
+                        firstList.Add(s, new HashSet<string>());
+                        firstList[s].Add(t);
+                    }
                     break;
 
                 // Create a new dependency graph for parent and child
