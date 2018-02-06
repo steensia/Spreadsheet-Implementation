@@ -219,10 +219,8 @@ namespace Dependencies
                 throw new ArgumentNullException();
             }
             // Check if dependency exists
-            if (parentList.ContainsKey(s) && childList.ContainsKey(t))
+            if (parentList.ContainsKey(s) && parentList[s].Contains(t))
             {
-                if(parentList[s].Contains(t))
-                {
                     parentList[s].Remove(t);
                     childList[t].Remove(s);
                     // Removes dependency completely if no links exist with parent or child and update size
@@ -235,7 +233,6 @@ namespace Dependencies
                         childList.Remove(t);
                     }
                     counter--;
-                }
                 // Remove dependency from parentList and childList
             }
             // Dependency does not exist, simply ignore
