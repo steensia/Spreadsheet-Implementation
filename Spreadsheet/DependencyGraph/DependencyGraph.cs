@@ -156,17 +156,27 @@ namespace Dependencies
                 throw new ArgumentNullException();
             }
             // Does nothing if user adds duplicate
-            if (parentList.ContainsKey(s) && childList.ContainsKey(t))
+            if (parentList.ContainsKey(s))
             {
-                return;
+                if(parentList[s].Contains(t))
+                {
+                    return;
+                }
             }
             // Check if parent exists, then just add child
             if (parentList.ContainsKey(s))
             {
                 // Update the parentList, childList, and size
                 parentList[s].Add(t);
-                childList.Add(t, new HashSet<string>());
-                childList[t].Add(s);
+                if (childList.ContainsKey(t))
+                {
+                    childList[t].Add(s);
+                }
+                else
+                {
+                    childList.Add(t, new HashSet<string>());
+                    childList[t].Add(s);
+                }
                 counter++;
             }
             // Check if child exists, then just add parent
@@ -174,8 +184,16 @@ namespace Dependencies
             {
                 // Update the childList, parentList, and size
                 childList[t].Add(s);
-                parentList.Add(s, new HashSet<string>());
-                parentList[s].Add(t);
+                if(parentList.ContainsKey(s))
+                {
+                    parentList[s].Add(t);
+                }
+                else
+                {
+                    parentList.Add(s, new HashSet<string>());
+                    parentList[s].Add(t);
+                }
+
                 counter++;
             }
             // Create new dependency, update each list and size
@@ -203,19 +221,22 @@ namespace Dependencies
             // Check if dependency exists
             if (parentList.ContainsKey(s) && childList.ContainsKey(t))
             {
+                if(parentList[s].Contains(t))
+                {
+                    parentList[s].Remove(t);
+                    childList[t].Remove(s);
+                    // Removes dependency completely if no links exist with parent or child and update size
+                    if (parentList[s].Count < 1)
+                    {
+                        parentList.Remove(s);
+                    }
+                    if (childList[t].Count < 1)
+                    {
+                        childList.Remove(t);
+                    }
+                    counter--;
+                }
                 // Remove dependency from parentList and childList
-                parentList[s].Remove(t);
-                childList[t].Remove(s);
-                // Removes dependency completely if no links exist with parent or child and update size
-                if (parentList[s].Count < 1)
-                {
-                    parentList.Remove(s);
-                }
-                if (childList[t].Count < 1)
-                {
-                    childList.Remove(t);
-                }
-                counter--;
             }
             // Dependency does not exist, simply ignore
             else
