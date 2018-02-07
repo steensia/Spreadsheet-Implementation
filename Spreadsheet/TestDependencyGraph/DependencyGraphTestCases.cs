@@ -980,5 +980,38 @@ namespace TestDependencyGraph
             }
             // Assert.AreEqual(50_000, graph.Size);
         }
+        [TestMethod]
+        public void ReplaceDeesDents()
+        {
+            DependencyGraph graph = new DependencyGraph();
+            HashSet<string> newDents = new HashSet<string>();
+            HashSet<string> newDees = new HashSet<string>();
+
+            // adding dents
+            newDents.Add("a");
+            newDents.Add("c");
+            newDents.Add("x");
+
+            // adding dees
+            newDees.Add("b");
+            newDees.Add("a");
+
+            // add dependencies
+            graph.AddDependency("a", "b");
+            graph.AddDependency("a", "c");
+            graph.AddDependency("b", "c");
+            graph.AddDependency("d", "e");
+
+            // replace d's dependents
+
+            graph.ReplaceDependents("d", newDents);
+
+            // replace b's dependees
+
+            graph.ReplaceDependees("b", newDees);
+
+            Assert.IsTrue(new HashSet<string>() { "b", "c" }.SetEquals(graph.GetDependents("a")));
+        }
+
     }
 }
