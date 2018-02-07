@@ -68,7 +68,9 @@ namespace Dependencies
 
         public DependencyGraph(DependencyGraph dg2)
         {
-            DependencyGraph dg = new DependencyGraph(dg2);
+            this.parentList = dg2.parentList;
+            this.childList = dg2.childList;
+            this.counter = dg2.counter;
         }
 
         /// <summary>
