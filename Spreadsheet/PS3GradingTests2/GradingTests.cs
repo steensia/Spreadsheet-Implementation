@@ -848,7 +848,7 @@ namespace PS3GradingTests2
                 DependencyGraph t = new DependencyGraph();
 
                 // A bunch of strings to use
-                const int SIZE = 10;
+                const int SIZE = 2;
                 string[] letters = new string[SIZE];
                 for (int i = 0; i < SIZE; i++)
                 {

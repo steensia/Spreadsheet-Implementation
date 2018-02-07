@@ -348,6 +348,13 @@ namespace Dependencies
                 // Dependencies have been replaced and size remains the same 
                // counter = childCount;
             }
+            else
+            {
+                foreach (string newParent in newDependees)
+                {
+                    AddDependency(newParent, t);
+                }
+            }
         }
     }
 }
