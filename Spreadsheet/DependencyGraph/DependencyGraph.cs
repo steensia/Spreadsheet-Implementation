@@ -66,6 +66,11 @@ namespace Dependencies
         {
         }
 
+        public DependencyGraph(DependencyGraph dg2)
+        {
+            DependencyGraph dg = new DependencyGraph(dg2);
+        }
+
         /// <summary>
         /// The number of dependencies in the DependencyGraph.
         /// </summary>
@@ -76,6 +81,7 @@ namespace Dependencies
 
         /// <summary>
         /// Reports whether dependents(s) is non-empty.  Requires s != null.
+        /// If s is null, an ArgumentNullException is thrown.
         /// </summary>
         public bool HasDependents(string s)
         {
@@ -94,6 +100,7 @@ namespace Dependencies
 
         /// <summary>
         /// Reports whether dependees(s) is non-empty.  Requires s != null.
+        /// If s is null, an ArgumentNullException is thrown.
         /// </summary>
         public bool HasDependees(string s)
         {
@@ -112,6 +119,7 @@ namespace Dependencies
 
         /// <summary>
         /// Enumerates dependents(s).  Requires s != null.
+        /// If s is null, an ArgumentNullException is thrown.
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
@@ -132,6 +140,7 @@ namespace Dependencies
 
         /// <summary>
         /// Enumerates dependees(s).  Requires s != null.
+        /// If s is null, an ArgumentNullException is thrown.
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
@@ -154,6 +163,7 @@ namespace Dependencies
         /// Adds the dependency (s,t) to this DependencyGraph.
         /// This has no effect if (s,t) already belongs to this DependencyGraph.
         /// Requires s != null and t != null.
+        /// If s and/or t is null, an ArgumentNullException is thrown.
         /// </summary>
         public void AddDependency(string s, string t)
         {
@@ -196,6 +206,7 @@ namespace Dependencies
         /// Removes the dependency (s,t) from this DependencyGraph.
         /// Does nothing if (s,t) doesn't belong to this DependencyGraph.
         /// Requires s != null and t != null.
+        /// If s and/or t is null, an ArgumentNullException is thrown.
         /// </summary>
         public void RemoveDependency(string s, string t)
         {
@@ -234,6 +245,8 @@ namespace Dependencies
         /// Removes all existing dependencies of the form (s,r).  Then, for each
         /// t in newDependents, adds the dependency (s,t).
         /// Requires s != null and t != null.
+        /// If s or IEnumerable newDependents contains a null string,
+        /// an ArgumentNullException is thrown.
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
@@ -266,6 +279,10 @@ namespace Dependencies
                 foreach (string newChild in newDependents)
                 {
                     // Ignores null dependents
+                    if (newChild == null)
+                    {
+                        throw new ArgumentNullException();
+                    }
                     if (newChild != null && parentCount < counter)
                     {
                         AddDependency(1, parentList, childList, s, newChild);
@@ -279,6 +296,8 @@ namespace Dependencies
         /// Removes all existing dependencies of the form (r,t).  Then, for each 
         /// s in newDependees, adds the dependency (s,t).
         /// Requires s != null and t != null.
+        /// If t or IEnumerable newDependees contains a null string,
+        /// an ArgumentNullException is thrown.
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
@@ -310,6 +329,10 @@ namespace Dependencies
                 foreach (string newParent in newDependees)
                 {
                     // Ignores null dependees
+                    if (newParent == null)
+                    {
+                        throw new ArgumentNullException();
+                    }
                     if (newParent != null && childCount < counter)
                     {
                         AddDependency(2, parentList, childList, newParent, t);

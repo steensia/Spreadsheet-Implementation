@@ -672,6 +672,7 @@ namespace DependencyGraphTestCases
             /// Check if ReplaceDependents ignores null dependent
             /// </summary>
             [TestMethod]
+            [ExpectedException(typeof(ArgumentNullException))]
             public void ReplaceDependentsCheckWhenListContainsNull()
             {
                 DependencyGraph graph = new DependencyGraph();
@@ -763,6 +764,7 @@ namespace DependencyGraphTestCases
             /// and size decreases if null values are inside the list.
             /// </summary>
             [TestMethod]
+            [ExpectedException(typeof(ArgumentNullException))]
             public void ReplaceDependentsStressTest4()
             {
                 DependencyGraph graph = new DependencyGraph();
@@ -953,6 +955,7 @@ namespace DependencyGraphTestCases
             /// and size decreases if null values are inside the list.
             /// </summary>
             [TestMethod]
+            [ExpectedException(typeof(ArgumentNullException))]
             public void ReplaceDependeesStressTest4()
             {
                 DependencyGraph graph = new DependencyGraph();
@@ -978,6 +981,19 @@ namespace DependencyGraphTestCases
                         Assert.AreEqual(true, temp.Contains("a" + i));
                     }
                 }
+            }
+
+            /// <summary>
+            /// Check if the new constructor produces the same set of dependencies
+            /// </summary>
+            [TestMethod]
+            public void TestConstructor1()
+            {
+                DependencyGraph graph = new DependencyGraph();
+                graph.AddDependency("a", "b");
+                DependencyGraph graph2 = new DependencyGraph(graph);
+
+                Assert.ReferenceEquals(graph, graph2);
             }
         }
     }
