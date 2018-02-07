@@ -163,7 +163,7 @@ namespace Dependencies
             }
 
             // Does nothing if user adds duplicate
-            if (parentList.ContainsKey(s) && childList.ContainsKey(t))
+            if (parentList.ContainsKey(s) && parentList[s].Contains(t))
             {
                 return;
             }
@@ -205,7 +205,7 @@ namespace Dependencies
             }
 
             // Check if dependency exists
-            if (parentList.ContainsKey(s) && childList.ContainsKey(t))
+            if (parentList.ContainsKey(s) && parentList[s].Contains(t))
             {
                 // Remove dependency from parentList and childList
                 parentList[s].Remove(t);
@@ -272,9 +272,6 @@ namespace Dependencies
                         parentCount++;
                     }
                 }
-
-                // Dependencies have been replaced and size is adjusted if nulls existed
-                counter = parentCount;
             }
         }
 
@@ -319,10 +316,10 @@ namespace Dependencies
                         childCount++;
                     }
                 }
-
-                // Dependencies have been replaced and size is adjusted if nulls existed
-                counter = childCount;
             }
+            else
+                foreach (string newParent in newDependees)
+                    AddDependency(newParent, t);
         }
         /// <summary>
         /// Private helper method to add a DependencyGraph
@@ -336,15 +333,30 @@ namespace Dependencies
                 // Add child if parent already exists
                 case 1:
                     firstList[s].Add(t);
-                    secondList.Add(t, new HashSet<string>());
-                    secondList[t].Add(s);
+                    if (secondList.ContainsKey(t))
+                    {
+                        secondList[t].Add(s);
+                    }                        
+                    else
+                    {
+                        secondList.Add(t, new HashSet<string>());
+                        secondList[t].Add(s);
+                    }
                     break;
 
                 // Add parent if child already exists
                 case 2:
                     secondList[t].Add(s);
-                    firstList.Add(s, new HashSet<string>());
-                    firstList[s].Add(t);
+                    if (firstList.ContainsKey(s))
+                    {
+                        firstList[s].Add(t);
+                    }
+               
+                    else
+                    {
+                        firstList.Add(s, new HashSet<string>());
+                        firstList[s].Add(t);
+                    }
                     break;
 
                 // Create a new dependency graph for parent and child
