@@ -205,7 +205,7 @@ namespace Dependencies
             }
 
             // Check if dependency exists
-            if (parentList.ContainsKey(s)) // && parentList[s].Contains(t))
+            if (parentList.ContainsKey(s) && parentList[s].Contains(t))
             {
                 // Remove dependency from parentList and childList
                 parentList[s].Remove(t);
