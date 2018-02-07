@@ -479,6 +479,7 @@ namespace Formulas
             // Enumerate matching tokens that don't consist solely of white space.
             // PLEASE NOTE:  Notice the second parameter to Split, which says to ignore embedded white space
             /// in the pattern.
+            
             foreach (String s in Regex.Split(formula, splittingPattern, RegexOptions.IgnorePatternWhitespace))
             {
                 if (!Regex.IsMatch(s, @"^\s*$", RegexOptions.Singleline))
@@ -492,12 +493,12 @@ namespace Formulas
         /// Returns an ISet<String> that contains each distinct variable (in normalized form)
         /// that appears in the Formula.
         /// </summary>
-        private ISet<string> GetVariables(Normalizer N)
+        private ISet<string> GetVariables()
         {
-            HashSet<string> Set = new HashSet<string>(GetTokens(formula));
-            foreach (string token in Set)
+            HashSet<string> distinctVar = new HashSet<string>();
+            foreach (string token in distinctVar)
             {
-                if (Regex.IsMatch(N(token), varPattern))
+                if (Regex.IsMatch((token), varPattern))
                 {
 
                 }
@@ -507,7 +508,7 @@ namespace Formulas
 
         public override string ToString()
         {
-            return formula;
+            return this.formula;
         }
     }
 
