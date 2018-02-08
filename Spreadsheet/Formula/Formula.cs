@@ -255,6 +255,7 @@ namespace Formulas
         /// 
         /// This constructor calls upon the new constructor, but ensuring that the Normalizer 
         /// uses identity method and Validator is always true.
+        /// <paramref name="formula"/>
         /// </summary>
         /// 
         public Formula(String formula) : this(formula, s => s, s => true)
@@ -268,6 +269,7 @@ namespace Formulas
         /// If no undefined variables or divisions by zero are encountered when evaluating 
         /// this Formula, its value is returned.  Otherwise, throws a FormulaEvaluationException  
         /// with an explanatory Message.
+        /// <paramref name="lookup"/>
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
@@ -470,6 +472,7 @@ namespace Formulas
         /// right paren, one of the four operator symbols, a string consisting of a letter followed by
         /// zero or more digits and/or letters, a double literal, and anything that doesn't
         /// match one of those patterns.  There are no empty tokens, and no token contains white space.
+        /// <paramref name="formula"/>
         /// </summary>
         private static IEnumerable<string> GetTokens(String formula)
         {
@@ -528,7 +531,12 @@ namespace Formulas
             }
             return new HashSet<string>(distinctVar);
         }
-
+        
+        /// <summary>
+        /// This method overrides the toString method and returns the 
+        /// string version of the Formula in normalized form.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             // When default constructor is called, modify so that
