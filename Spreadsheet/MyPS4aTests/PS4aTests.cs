@@ -55,10 +55,22 @@ namespace MyPS4aTests
         }
 
         /// <summary>
-        /// Check if GetVariables returns identical variables using new constructor
+        /// Check if GetVariables returns an empty list if contain no variables
         /// </summary>
         [TestMethod]
         public void GetVariablesTest2()
+        {
+            Formula f1 = new Formula("1+2", s => s.ToUpper(), s => true);
+            HashSet<string> set = new HashSet<string>(f1.GetVariables());
+            HashSet<string> set2 = new HashSet<string>() {};
+            Assert.IsTrue(set2.SetEquals(set));
+        }
+
+        /// <summary>
+        /// Check if GetVariables returns identical variables using new constructor
+        /// </summary>
+        [TestMethod]
+        public void GetVariablesTest3()
         {
             Formula f1 = new Formula("b+a", s => s, s => true);
             HashSet<string> set = new HashSet<string>(f1.GetVariables());
@@ -70,7 +82,7 @@ namespace MyPS4aTests
         /// Check if GetVariables returns identical variables using old constructor
         /// </summary>
         [TestMethod]
-        public void GetVariablesTest3()
+        public void GetVariablesTest4()
         {
             Formula f1 = new Formula("z + x");
             HashSet<string> set = new HashSet<string>(f1.GetVariables());
@@ -170,9 +182,8 @@ namespace MyPS4aTests
         [ExpectedException(typeof(FormulaEvaluationException))]
         public void EvaluateDivideByZeroTest()
         {
-            Formula f0 = new Formula("(4-2) / (3 - 3)");
-            Assert.AreEqual(f0.Evaluate( s => 0), 0);
+            Formula f0 = new Formula("(4-2) / (3 - x)");
+            Assert.AreEqual(f0.Evaluate(s => 3), 0);
         }
-
     }
 }

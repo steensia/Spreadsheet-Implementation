@@ -378,5 +378,12 @@ namespace Formulas
             Formula f = new Formula("a-(b-(c-(d-(e-f))))");
             Assert.AreEqual(0, (double)f.Evaluate(s => 1), 1e-9);
         }
+
+        [TestMethod()]
+        public void Test48()
+        {
+            Formula f = new Formula("y*3-8/2+4/(8-9/2)/14/x");
+            Assert.AreEqual(8.0625, (double)f.Evaluate(s => (s == "x") ? 1 : 4), 1e-9);
+        }
     }
 }

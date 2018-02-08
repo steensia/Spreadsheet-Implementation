@@ -18,6 +18,7 @@ namespace Formulas
     {
         // Fields
 
+        // string to hold the formula after it is constructed
         private string formula;
 
         // Constants 
@@ -26,9 +27,18 @@ namespace Formulas
         const String opPattern = @"[\+\-*/]";
         const String varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
 
+        /// <summary>
+        /// New Formula constructor that takes in a string, normalizer and validator
+        /// If either entries are null, an exception is thrown.
+        /// A normalizer changes the variable tokens in the string, and the validator 
+        /// dictates if the formula is valid or not.  
+        /// </summary>
+        /// <param name="f"></param>
+        /// <param name="N"></param>
+        /// <param name="V"></param>
         public Formula(String f, Normalizer N, Validator V)
         {
-            if(f == null || N == null || V == null)
+            if (f == null || N == null || V == null)
             {
                 throw new ArgumentNullException();
             }
@@ -61,9 +71,9 @@ namespace Formulas
                     // Check if variable is legal
                     if (Regex.IsMatch(token, varPattern))
                     {
-                        if(Regex.IsMatch(N(token), varPattern))
+                        if (Regex.IsMatch(N(token), varPattern))
                         {
-                            if(V(N(token)) == false)
+                            if (V(N(token)) == false)
                             {
                                 throw new FormulaFormatException("This is not a legal variable");
                             }
@@ -242,9 +252,12 @@ namespace Formulas
         /// 
         /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
         /// explanatory Message.
+        /// 
+        /// This constructor calls upon the new constructor, but ensuring that the Normalizer 
+        /// uses identity method and Validator is always true.
         /// </summary>
         /// 
-        public Formula(String formula):this(formula, s => s, s => true)
+        public Formula(String formula) : this(formula, s => s, s => true)
         {
         }
         /// <summary>
@@ -265,7 +278,7 @@ namespace Formulas
                 this.formula = "0";
             }
 
-            if(lookup == null)
+            if (lookup == null)
             {
                 throw new ArgumentNullException();
             }
@@ -278,9 +291,7 @@ namespace Formulas
             // Loop through to see if the expression can be evaluated
             foreach (string t in tokenList)
             {
-                // If the token is a number or a variable, check if * or / is at the top of the operator stack, pop 
-                // the value stack, pop the operator stack, and apply the popped operator to t and the popped number. 
-                // Push the result onto the value stack. Otherwise, push t onto the value stack
+                // If the token is a number or a variable check for * or / operators 
                 if (Double.TryParse(t, out double numTemp) || Regex.IsMatch(t, varPattern))
                 {
                     double result;
@@ -296,12 +307,16 @@ namespace Formulas
                             throw new FormulaEvaluationException("This cannot be evaluated");
                         }
                     }
+                    // if * is at the top of the operator stack, pop the value stack, pop the operator stack, 
+                    // and apply the popped operator to t and the popped number. 
                     if (opStack.Count != 0 && opStack.Peek().Equals("*"))
                     {
                         result = valStack.Pop() * numTemp;
                         opStack.Pop();
                         valStack.Push(result);
                     }
+                    // if / is at the top of the operator stack, pop the value stack, pop the operator stack, 
+                    // and apply the popped operator to t and the popped number. 
                     else if (opStack.Count != 0 && opStack.Peek().Equals("/"))
                     {
                         result = valStack.Pop() / numTemp;
@@ -313,16 +328,17 @@ namespace Formulas
                         }
                         valStack.Push(result);
                     }
+                    // Push t onto the value stack if there was no * or /
                     else
                     {
                         valStack.Push(numTemp);
                     }
                 }
-
-                // If + is at the top of the operator stack, pop the value stack twice and the operator stack once.  Apply the popped operator 
-                // to the popped numbers. Push the result onto the value stack. Push t onto the operator stack, regardless of first step
+                // If current token is a +, check the operator stack for + or -
                 else if (t.Equals("+"))
                 {
+                    // If + is at the top of the operator stack, pop the value stack twice and the operator stack once.  Apply the popped operator 
+                    // to the popped numbers. Push the result onto the value stack. Push t onto the operator stack, regardless of first step
                     if (opStack.Count != 0 && opStack.Peek().Equals("+"))
                     {
                         double result = valStack.Pop() + valStack.Pop();
@@ -330,6 +346,8 @@ namespace Formulas
 
                         valStack.Push(result);
                     }
+                    // If - is at the top of the operator stack, pop the value stack twice and the operator stack once.  Apply the popped operator 
+                    // to the popped numbers. Push the result onto the value stack. Push t onto the operator stack, regardless of first step
                     if (opStack.Count != 0 && opStack.Peek().Equals("-"))
                     {
                         double temp = valStack.Pop();
@@ -340,10 +358,11 @@ namespace Formulas
                     }
                     opStack.Push(t);
                 }
-                // If - is at the top of the operator stack, pop the value stack twice and the operator stack once.  Apply the popped operator 
-                // to the popped numbers. Push the result onto the value stack. Push t onto the operator stack, regardless of first step
+                // If current token is a -, check the operator stack for + or -
                 else if (t.Equals("-"))
                 {
+                    // If - is at the top of the operator stack, pop the value stack twice and the operator stack once.  Apply the popped operator 
+                    // to the popped numbers. Push the result onto the value stack. Push t onto the operator stack, regardless of first step
                     if (opStack.Count != 0 && opStack.Peek().Equals("-"))
                     {
                         double temp = valStack.Pop();
@@ -352,6 +371,8 @@ namespace Formulas
 
                         valStack.Push(result);
                     }
+                    // If + is at the top of the operator stack, pop the value stack twice and the operator stack once.  Apply the popped operator 
+                    // to the popped numbers. Push the result onto the value stack. Push t onto the operator stack, regardless of first step
                     if (opStack.Count != 0 && opStack.Peek().Equals("+"))
                     {
                         double result = valStack.Pop() + valStack.Pop();
@@ -372,16 +393,19 @@ namespace Formulas
                     opStack.Push(t);
                 }
 
-                // When token is a closing parenthesis check if + or - is at the top of the operator stack, pop the value stack twice 
-                // and the operator stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.
+                // When token is a closing parenthesis check the operator stack for + or - 
                 else if (Regex.IsMatch(t, rpPattern))
                 {
+                    // if + is at the top of the operator stack, pop the value stack twice  and the operator 
+                    // stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.
                     if (opStack.Count != 0 && opStack.Peek().Equals("+"))
                     {
                         double result = valStack.Pop() + valStack.Pop();
                         opStack.Pop();
                         valStack.Push(result);
                     }
+                    // if - is at the top of the operator stack, pop the value stack twice  and the operator 
+                    // stack once. Apply the popped operator to the popped numbers. Push the result onto the value stack.
                     else if (opStack.Count != 0 && opStack.Peek().Equals("-"))
                     {
                         double temp = valStack.Pop();
@@ -394,7 +418,7 @@ namespace Formulas
                     opStack.Pop();
 
 
-                    // If * or / is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                    // If * is at the top of the operator stack, pop the value stack twice and the operator stack once. 
                     // Apply the popped operator to the popped numbers. Push the result onto the value stack.
                     if (opStack.Count != 0 && opStack.Peek().Equals("*"))
                     {
@@ -402,24 +426,18 @@ namespace Formulas
                         opStack.Pop();
                         valStack.Push(result2);
                     }
+                    // If / is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                    // Apply the popped operator to the popped numbers. Push the result onto the value stack.
                     else if (opStack.Count != 0 && opStack.Peek().Equals("/"))
                     {
                         double result2 = valStack.Pop();
-                        if (valStack.Peek() == 0)
-                        {
-                            throw new FormulaEvaluationException("A division by zero is not allowed");
-                        }
-                        else
-                        {
-                            result2 = result2 / valStack.Pop();
-                        }
-
-                        opStack.Pop();
-
                         if (result2 == 0)
                         {
                             throw new FormulaEvaluationException("A division by zero is not allowed");
                         }
+                        result2 = result2 / valStack.Pop();
+                        opStack.Pop();
+
                         valStack.Push(result2);
                     }
                 }
@@ -481,7 +499,8 @@ namespace Formulas
             // Enumerate matching tokens that don't consist solely of white space.
             // PLEASE NOTE:  Notice the second parameter to Split, which says to ignore embedded white space
             /// in the pattern.
-            
+
+
             foreach (String s in Regex.Split(formula, splittingPattern, RegexOptions.IgnorePatternWhitespace))
             {
                 if (!Regex.IsMatch(s, @"^\s*$", RegexOptions.Singleline))
