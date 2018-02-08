@@ -495,8 +495,10 @@ namespace Formulas
         /// </summary>
         public ISet<string> GetVariables()
         {
+            HashSet<string> tokenList = new HashSet<string>(GetTokens(this.formula));
             HashSet<string> distinctVar = new HashSet<string>();
-            foreach (string token in distinctVar)
+
+            foreach (string token in tokenList)
             {
                 if (Regex.IsMatch(token, varPattern))
                 {

@@ -28,8 +28,9 @@ namespace MyPS4aTests
         public void GetVariablesTest1()
         {
             Formula f1 = new Formula("x+y", s => s.ToUpper(), s => true);
-            HashSet<string> set = f1.GetVariables();
-            Assert.IsTrue(new HashSet<string>() { "X", "Y" }.Equals(f1.GetVariables));
+            HashSet<string> set = new HashSet<string>(f1.GetVariables());
+            HashSet<string> set2 = new HashSet<string>() { "X", "Y" };
+            Assert.IsTrue(set2.SetEquals(set));
         }
     }
 }
