@@ -94,8 +94,6 @@ namespace FormulaTestCases
         public void Construct8()
         {
             Formula f = new Formula("( 2 + 3 ) 2 + 2 ) + ( 4 + 5 ) + ( 7");
-            f.Evaluate(x => 0);
-
         }
 
         /// <summary>
@@ -106,8 +104,6 @@ namespace FormulaTestCases
         public void Construct9()
         {
             Formula f = new Formula("(1)2");
-            f.Evaluate(x => 0);
-
         }
 
         /// <summary>
@@ -117,22 +113,17 @@ namespace FormulaTestCases
         [ExpectedException(typeof(FormulaFormatException))]
         public void Construct10()
         {
-
             Formula f = new Formula("");
-            f.Evaluate(x => 0);
-
         }
 
         /// <summary>
-        /// Testing two numbers in sucession.
+        /// Testing two numbers in succession.
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
         public void Construct11()
         {
             Formula f = new Formula("(1 + 2) (1)");
-            f.Evaluate(x => 0);
-
         }
         /// <summary>
         /// Check long invalid name
@@ -142,8 +133,6 @@ namespace FormulaTestCases
         public void Construct12()
         {
             Formula f = new Formula("Bill_123");
-            f.Evaluate(x => 0);
-
         }
 
         /// <summary>
@@ -154,7 +143,6 @@ namespace FormulaTestCases
         public void Construct13()
         {
             Formula f = new Formula("+");
-            f.Evaluate(x => 0);
         }
 
         /// <summary>
@@ -165,8 +153,6 @@ namespace FormulaTestCases
         public void Construct14()
         {
             Formula f = new Formula("2(1)");
-            f.Evaluate(x => 0);
-
         }
 
         /// <summary>
@@ -177,7 +163,6 @@ namespace FormulaTestCases
         public void Construct15()
         {
             Formula f = new Formula("()");
-            f.Evaluate(x => 0);
         }
 
         /// <summary>
@@ -188,32 +173,26 @@ namespace FormulaTestCases
         public void Construct16()
         {
             Formula f = new Formula("bob hey");
-            f.Evaluate(x => 0);
-
         }
 
         /// <summary>
-        /// Checking for unequal amounts of paranthesis.
+        /// Checking for unequal amounts of parenthesis.
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
         public void Construct17()
         {
             Formula f = new Formula("((2+2)");
-            f.Evaluate(x => 0);
-
         }
 
         /// <summary>
-        /// Greater amounts of closing paranthesis.
+        /// Greater amounts of closing parenthesis.
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
         public void Construct18()
         {
             Formula f = new Formula("(1 + 2) + 3)");
-            f.Evaluate(x => 0);
-
         }
 
         /// <summary>
@@ -224,7 +203,6 @@ namespace FormulaTestCases
         public void Construct19()
         {
             Formula f = new Formula("2 + 2 *");
-            f.Evaluate(x => 0);
         }
 
 
@@ -333,7 +311,7 @@ namespace FormulaTestCases
         public void Evaluate6()
         {
             Formula f = new Formula("5 / x5");
-            Assert.AreEqual(f.Evaluate(v => 0), 22.5, 1e-6);
+            Assert.AreEqual(22.5, f.Evaluate(v => 0));
         }
 
         /// <summary>
@@ -355,7 +333,6 @@ namespace FormulaTestCases
             Formula f = new Formula("(x + y) * (z / x)");
             Assert.AreEqual(f.Evaluate(Lookup4), 20.0, 1e-6);
         }
-
 
         /// <summary>
         /// A Lookup method that maps x to 4.0, y to 6.0, and z to 8.0.

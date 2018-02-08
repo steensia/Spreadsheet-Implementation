@@ -434,19 +434,15 @@ namespace Formulas
             // the value stack. Just pop all tokens and return the result as the value of the expression.
             else
             {
-                if (opStack.Count != 0 && opStack.Peek().Equals("+"))
+                if (opStack.Peek().Equals("+"))
                 {
                     return valStack.Pop() + valStack.Pop();
                 }
-                else if (opStack.Count != 0 && opStack.Peek().Equals("-"))
+                else
                 {
                     double temp = valStack.Pop();
                     opStack.Pop();
                     return valStack.Pop() - temp;
-                }
-                else
-                {
-                    throw new FormulaEvaluationException("Cannot evaluate this expression");
                 }
             }
         }
@@ -501,13 +497,6 @@ namespace Formulas
         /// </summary>
         public ISet<string> GetVariables()
         {
-            // When default constructor is called, modify so that
-            // it behaves like new Formula("0")
-            if (this.formula == null)
-            {
-                this.formula = "0";
-            }
-
             HashSet<string> tokenList = new HashSet<string>(GetTokens(this.formula));
             HashSet<string> distinctVar = new HashSet<string>();
 

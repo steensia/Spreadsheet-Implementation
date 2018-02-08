@@ -364,5 +364,19 @@ namespace Formulas
         {
             Test41();
         }
+
+        [TestMethod()]
+        public void Test46()
+        {
+            Formula f = new Formula("a + b * c - d - 3 * 3.0 - 3.0e0 / 0.003e3");
+            Assert.AreEqual(-1, (double)f.Evaluate(s => 3), 1e-9);
+        }
+
+        [TestMethod()]
+        public void Test47()
+        {
+            Formula f = new Formula("a-(b-(c-(d-(e-f))))");
+            Assert.AreEqual(0, (double)f.Evaluate(s => 1), 1e-9);
+        }
     }
 }
