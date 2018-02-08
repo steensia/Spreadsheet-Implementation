@@ -69,7 +69,7 @@ namespace Dependencies
         public DependencyGraph(DependencyGraph dg2)
         {
             this.parentList = new Dictionary<string, HashSet<string>>(dg2.parentList);
-            this.childList = dg2.childList;
+            this.childList = new Dictionary<string, HashSet<string>>(dg2.childList);
             this.counter = dg2.counter;
         }
 
