@@ -67,7 +67,6 @@ namespace Formulas
                             {
                                 throw new FormulaFormatException("This is not a legal variable");
                             }
-
                         }
                         else
                         {
@@ -259,6 +258,13 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
+            // When default constructor is called, modify so that
+            // it behaves like new Formula("0")
+            if (this.formula == null)
+            {
+                this.formula = "0";
+            }
+
             if(lookup == null)
             {
                 throw new ArgumentNullException();
@@ -495,6 +501,13 @@ namespace Formulas
         /// </summary>
         public ISet<string> GetVariables()
         {
+            // When default constructor is called, modify so that
+            // it behaves like new Formula("0")
+            if (this.formula == null)
+            {
+                this.formula = "0";
+            }
+
             HashSet<string> tokenList = new HashSet<string>(GetTokens(this.formula));
             HashSet<string> distinctVar = new HashSet<string>();
 
@@ -510,6 +523,13 @@ namespace Formulas
 
         public override string ToString()
         {
+            // When default constructor is called, modify so that
+            // it behaves like new Formula("0")
+            if (this.formula == null)
+            {
+                this.formula = "0";
+            }
+
             return this.formula;
         }
     }
