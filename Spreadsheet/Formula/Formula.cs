@@ -221,7 +221,7 @@ namespace Formulas
                     throw new FormulaFormatException("The number of opening parentheses must match the number of closing parentheses");
                 }
             }
-            this.formula = f;
+            this.formula = N(f);
         }
 
         /// <summary>
