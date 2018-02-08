@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Formulas;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,6 +19,17 @@ namespace MyPS4aTests
             Formula f1 = new Formula("x+y", s => s.ToUpper(), s => true);
             Formula f2 = new Formula(f1.ToString(), s => s, s => true);
             Assert.IsTrue(f1.Equals(f2));
+        }
+
+        /// <summary>
+        /// Check if GetVariables returns the normalized variable tokens
+        /// </summary>
+        [TestMethod]
+        public void GetVariablesTest1()
+        {
+            Formula f1 = new Formula("x+y", s => s.ToUpper(), s => true);
+            HashSet<string> set = f1.GetVariables();
+            Assert.IsTrue(new HashSet<string>() { "X", "Y" }.Equals(f1.GetVariables));
         }
     }
 }

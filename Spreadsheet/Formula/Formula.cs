@@ -493,17 +493,17 @@ namespace Formulas
         /// Returns an ISet<String> that contains each distinct variable (in normalized form)
         /// that appears in the Formula.
         /// </summary>
-        private ISet<string> GetVariables()
+        public ISet<string> GetVariables()
         {
             HashSet<string> distinctVar = new HashSet<string>();
             foreach (string token in distinctVar)
             {
-                if (Regex.IsMatch((token), varPattern))
+                if (Regex.IsMatch(token, varPattern))
                 {
-
+                    distinctVar.Add(token);
                 }
             }
-            return new HashSet<string>();
+            return new HashSet<string>(distinctVar);
         }
 
         public override string ToString()
