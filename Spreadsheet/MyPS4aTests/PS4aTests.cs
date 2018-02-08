@@ -43,14 +43,36 @@ namespace MyPS4aTests
         }
 
         /// <summary>
+        /// Check if toString method represents the constructed formula with normalizer
+        /// </summary>
+        [TestMethod]
+        public void ToStringTest4()
+        {
+            Formula f0 = new Formula("a + b + c", s => s.ToUpper(), s => true);
+            Assert.IsTrue("a + b + c".ToUpper().Equals(f0.ToString()));
+        }
+
+
+        /// <summary>
+        /// Check evaluate works on constructor made by toString method.
+        /// </summary>
+        [TestMethod]
+        public void EvaluateToStringFormula()
+        {
+            Formula f0 = new Formula("a * b", s => s.ToUpper(), s => true);
+            Formula f1 = new Formula(f0.ToString());
+            Assert.AreEqual(4, f1.Evaluate(s => 2));
+        }
+
+        /// <summary>
         /// Check if GetVariables returns the normalized variable tokens
         /// </summary>
         [TestMethod]
         public void GetVariablesTest1()
         {
-            Formula f1 = new Formula("x+y", s => s.ToUpper(), s => true);
+            Formula f1 = new Formula("x+y+z", s => s.ToUpper(), s => true);
             HashSet<string> set = new HashSet<string>(f1.GetVariables());
-            HashSet<string> set2 = new HashSet<string>() { "X", "Y" };
+            HashSet<string> set2 = new HashSet<string>() { "X", "Y", "Z" };
             Assert.IsTrue(set2.SetEquals(set));
         }
 
