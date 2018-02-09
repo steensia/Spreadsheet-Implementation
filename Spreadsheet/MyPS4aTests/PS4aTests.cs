@@ -16,9 +16,9 @@ namespace MyPS4aTests
         [TestMethod]
         public void ToStringTest1()
         {
-            Formula f1 = new Formula("x+y", s => s, s => true);
+            Formula f1 = new Formula("x + y", s => s.ToUpper(), s => true);
             Formula f2 = new Formula(f1.ToString(), s => s, s => true);
-            Assert.IsTrue(f1.Equals(f2));
+            Assert.IsTrue(f1.ToString().Equals(f2.ToString()));
         }
 
         /// <summary>
@@ -39,19 +39,32 @@ namespace MyPS4aTests
         public void ToStringTest3()
         {
             Formula f0 = new Formula("a + b + c");
-            Assert.IsTrue("a + b + c".Equals(f0.ToString()));
+            // ignore white space
+            Assert.IsTrue("a+b+c".Equals(f0.ToString()));
         }
 
         /// <summary>
-        /// Check if toString method represents the constructed formula with normalizer
+        /// Check if toString method works correctly when evaluating
+        /// another constructor identical to it.
         /// </summary>
         [TestMethod]
         public void ToStringTest4()
         {
             Formula f0 = new Formula("a + b + c", s => s.ToUpper(), s => true);
-            Assert.IsTrue("a + b + c".ToUpper().Equals(f0.ToString()));
+            Formula f1 = new Formula(f0.ToString());
+            Assert.IsTrue(f0.Evaluate(s => 3).Equals(f1.Evaluate(s => 3)));
         }
 
+        /// <summary>
+        /// Check if zero argument constructor is equal to a formula that constructs "0"
+        /// </summary>
+        [TestMethod]
+        public void ConstructorZeroArgument()
+        {
+            Formula f0 = new Formula();
+            Formula f1 = new Formula("0", s => "s", s => true);
+            Assert.IsTrue(f0.ToString().Equals(f1.ToString()));
+        }
 
         /// <summary>
         /// Check evaluate works on constructor made by toString method.
@@ -62,6 +75,26 @@ namespace MyPS4aTests
             Formula f0 = new Formula("a * b", s => s.ToUpper(), s => true);
             Formula f1 = new Formula(f0.ToString());
             Assert.AreEqual(4, f1.Evaluate(s => 2));
+        }
+
+        /// <summary>
+        /// Check evaluate works after it is normalized to upper case
+        /// </summary>
+        [TestMethod]
+        public void EvaluateTest1()
+        {
+            Formula f0 = new Formula("x + 2", s => s.ToUpper(), s => true);
+            Assert.AreEqual(7, f0.Evaluate(Lookup));
+        }
+
+        /// <summary>
+        /// Check evaluate works after it is normalized to lower case
+        /// </summary>
+        [TestMethod]
+        public void EvaluateTest2()
+        {
+            Formula f0 = new Formula("X + 3", s => s.ToLower(), s => true);
+            Assert.AreEqual(7, f0.Evaluate(Lookup));
         }
 
         /// <summary>
@@ -84,7 +117,7 @@ namespace MyPS4aTests
         {
             Formula f1 = new Formula("1+2", s => s.ToUpper(), s => true);
             HashSet<string> set = new HashSet<string>(f1.GetVariables());
-            HashSet<string> set2 = new HashSet<string>() {};
+            HashSet<string> set2 = new HashSet<string>() { };
             Assert.IsTrue(set2.SetEquals(set));
         }
 
@@ -206,6 +239,22 @@ namespace MyPS4aTests
         {
             Formula f0 = new Formula("(4-2) / (3 - x)");
             Assert.AreEqual(f0.Evaluate(s => 3), 0);
+        }
+
+        /// <summary>
+        /// A Lookup method that maps x to 4.0, X to 5.0
+        /// All other variables result in an UndefinedVariableException.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public double Lookup(String v)
+        {
+            switch (v)
+            {
+                case "x": return 4.0;
+                case "X": return 5.0;
+                default: throw new UndefinedVariableException(v);
+            }
         }
     }
 }
