@@ -50,7 +50,7 @@
       <Name>DependencyGraph</Name>
     </ProjectReference>
     <ProjectReference Include="..\Formula\Formula.csproj">
-      <Project>{d43d998c-9797-4cf4-9bb0-6de22753849a}</Project>
+      <Project>{D43D998C-9797-4CF4-9BB0-6DE22753849A}</Project>
       <Name>Formula</Name>
     </ProjectReference>
   </ItemGroup>

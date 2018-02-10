@@ -1,8 +1,8 @@
 ﻿// Written by Joe Zachary for CS 3500, February 2018
 
+using Formulas;
 using System;
 using System.Collections.Generic;
-using Formulas;
 
 namespace SS
 {
