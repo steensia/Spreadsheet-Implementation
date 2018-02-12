@@ -92,7 +92,7 @@ namespace Formulas
                     // The first token must be a number, variable, or opening parenthesis
                     if (token == tokenList[0] && tokenCount < 1)
                     {
-                        if (!(Double.TryParse(token, out double numTemp2) || Regex.IsMatch(N(token), varPattern) || Regex.IsMatch(token, lpPattern)))
+                        if (!(Double.TryParse(token, out double numTemp2) || Regex.IsMatch(token, varPattern) || Regex.IsMatch(token, lpPattern)))
                         {
                             throw new FormulaFormatException("First token must be a number, variable, or opening parenthesis");
                         }
@@ -532,12 +532,16 @@ namespace Formulas
         /// </summary>
         public ISet<string> GetVariables()
         {
+            if (this.formula == null)
+            {
+                return new HashSet<string>();
+            }
             List<string> tokenList = new List<string>(GetTokens(this.formula));
             List<string> distinctVar = new List<string>();
 
             foreach (string token in tokenList)
             {
-                if (Regex.IsMatch(token, varPattern))
+                if (Regex.IsMatch(token, varPattern) && !(Double.TryParse(token, out double numTemp)))
                 {
                     distinctVar.Add(token);
                 }
