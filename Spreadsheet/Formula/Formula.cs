@@ -230,7 +230,20 @@ namespace Formulas
                     throw new FormulaFormatException("The number of opening parentheses must match the number of closing parentheses");
                 }
             }
-            this.formula = N(f);
+            this.formula = "";
+
+            // Normalize each variable token and concatenate all tokens
+            foreach (string token in tokenList)
+            {
+                if (Regex.IsMatch(N(token), varPattern) && !(Double.TryParse(token, out double numTemp)) && !(Regex.IsMatch(token, opPattern)))
+                {
+                    this.formula += N(token);
+                }
+                else
+                {
+                    this.formula += token;
+                }
+            }
         }
 
         /// <summary>
@@ -519,8 +532,8 @@ namespace Formulas
         /// </summary>
         public ISet<string> GetVariables()
         {
-            HashSet<string> tokenList = new HashSet<string>(GetTokens(this.formula));
-            HashSet<string> distinctVar = new HashSet<string>();
+            List<string> tokenList = new List<string>(GetTokens(this.formula));
+            List<string> distinctVar = new List<string>();
 
             foreach (string token in tokenList)
             {
@@ -531,7 +544,7 @@ namespace Formulas
             }
             return new HashSet<string>(distinctVar);
         }
-        
+
         /// <summary>
         /// This method overrides the toString method and returns the 
         /// string version of the Formula in normalized form.

@@ -345,6 +345,7 @@ namespace FormulaTestCases
             switch (v)
             {
                 case "x": return 4.0;
+                case "X": return 5.0;
                 case "y": return 6.0;
                 case "z": return 8.0;
                 default: throw new UndefinedVariableException(v);
