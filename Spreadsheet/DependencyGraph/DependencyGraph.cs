@@ -78,8 +78,18 @@ namespace Dependencies
                 throw new ArgumentNullException();
             }
 
-            this.parentList = new Dictionary<string, HashSet<string>>(otherDependencyGraph.parentList);
-            this.childList = new Dictionary<string, HashSet<string>>(otherDependencyGraph.childList);
+            this.parentList = new Dictionary<string, HashSet<string>>();
+            this.childList = new Dictionary<string, HashSet<string>>();
+            
+            foreach (var pair in otherDependencyGraph.parentList)
+            {
+                this.parentList.Add(pair.Key, new HashSet<string>(otherDependencyGraph.GetDependents(pair.Key)));
+            }
+            foreach (var pair in otherDependencyGraph.childList)
+            {
+                this.childList.Add(pair.Key, new HashSet<string>(otherDependencyGraph.GetDependees(pair.Key)));
+            }
+
             this.counter = otherDependencyGraph.counter;
         }
 
