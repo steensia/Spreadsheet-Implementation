@@ -132,6 +132,7 @@ namespace SS
             {
                 
             }
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -208,7 +209,6 @@ namespace SS
                 throw new InvalidNameException();
             }
             throw new NotImplementedException();
-            this.
         }
      
                 /// <summary>
