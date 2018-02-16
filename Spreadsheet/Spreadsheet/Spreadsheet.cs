@@ -71,7 +71,7 @@ namespace SS
                 this.value = value;
             }
         }
-        const String namePattern = @"[a-zA-Z]+[1-9][0-9]*";
+        const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
         private Dictionary<string, Cell> cellMap;
         private DependencyGraph set;
 
