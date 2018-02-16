@@ -52,16 +52,29 @@ namespace SS
     /// </summary>
     public class Spreadsheet : AbstractSpreadsheet
     {
-        const String cellPattern = @"[a-zA-Z][0-9a-zA-Z]*";
-
-        private Dictionary<string, object> cell;
+        /// <summary>
+        /// 
+        /// </summary>
+        private struct Cell
+        {
+            private string name;
+            private object content;
+            /// <summary>
+            /// 
+            /// </summary>
+            public Cell(string name, object content)
+            {
+                this.name = name;
+                this.content = content;
+            }
+        }
+        const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
 
         /// <summary>
         /// 
         /// </summary>
         public Spreadsheet()
         {
-            this.cell = new Dictionary<string, object>();
         }
 
         /// <summary>
@@ -70,18 +83,7 @@ namespace SS
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
             HashSet<string> nonEmptyCells = new HashSet<string>();
-            foreach (var cellName in this.cell.Keys)
-            {
-                if(!cellName.Equals(""))
-                {
-                    nonEmptyCells.Add(cellName);
-                }
-            }
-            if(nonEmptyCells.Count > 1)
-            {
-                return new HashSet<string>(nonEmptyCells);
-            }
-            return new HashSet<string>(); 
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -93,22 +95,7 @@ namespace SS
         public override object GetCellContents(string name)
         {
             HashSet<object> cellContent = new HashSet<object>();
-            if (name == null || invalidName())
-            {
-                throw new InvalidNameException();
-            }
-            foreach (var content in this.cell.Values)
-            {
-                if (!cellContent.Equals(""))
-                {
-                    cellContent.Add(content);
-                }
-            }
-            if (cellContent.Count > 1)
-            {
-                return new HashSet<object>(cellContent);
-            }
-            return new HashSet<object>();      
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -127,11 +114,7 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-            var oldContents = GetCellContents(name);
-            foreach (var cell in this.cell)
-            {
-                
-            }
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -208,10 +191,9 @@ namespace SS
                 throw new InvalidNameException();
             }
             throw new NotImplementedException();
-            this.
         }
-     
-                /// <summary>
+
+        /// <summary>
         /// Need to implement to distinguish invalid cell name
         /// </summary>
         /// <returns></returns>
@@ -221,4 +203,3 @@ namespace SS
         }
     }
 }
-
