@@ -145,5 +145,33 @@ namespace SpreadsheetTests
             sheet.SetCellContents("A7", "");
             Assert.AreEqual("ok", sheet.GetCellContents("A7"));
         }
+
+        /// <summary>
+        /// Check if SetCellContents replaces string content of existing cell 
+        /// </summary>
+        [TestMethod]
+        public void SetCellContentsString3()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("A7", new Formula());
+            sheet.SetCellContents("A1", "a");
+            sheet.SetCellContents("A7", "");
+            Assert.AreEqual("", sheet.GetCellContents("A7"));
+        }
+
+        /// <summary>
+        /// Check if for CircularException is caught and previous state is maintained
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SetCellContentsFormula()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A1", new Formula("B2"));
+            s.SetCellContents("B2", new Formula("B3"));
+            s.SetCellContents("B2", new Formula("A1"));
+            Assert.AreEqual("B2", s.GetCellContents("A1"));
+            Assert.AreEqual("B3", s.GetCellContents("B2"));
+        }
     }
 }

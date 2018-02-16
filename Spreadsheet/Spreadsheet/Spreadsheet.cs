@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -70,6 +71,13 @@ namespace SS
                 this.content = content;
                 this.value = value;
             }
+
+            public Cell(Cell other)
+            {
+                this.name = other.name;
+                this.content = other.content;
+                this.value = other.value;
+            }
         }
         const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
         private Dictionary<string, Cell> cellMap;
@@ -134,15 +142,15 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-            if (!this.cellMap.ContainsKey(name))
+            if (this.cellMap.ContainsKey(name))
             {
-                this.cellMap.Add(name, new Cell(name, number, null));
-                set.AddDependency(name, number.ToString());
+                //set.RemoveDependency(name, GetCellContents(name).ToString());
+                set.ReplaceDependents(name, new HashSet<string>());
+                this.cellMap[name] = new Cell(name, number, null);
             }
             else
             {
                 this.cellMap[name] = new Cell(name, number, null);
-                set.AddDependency(name, number.ToString());
             }
 
             return new HashSet<string>(GetCellsToRecalculate(name));
@@ -170,30 +178,25 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-
+            if (text.Equals(""))
+            {
+                //set.RemoveDependency(name, GetCellContents(name).ToString());
+                set.ReplaceDependents(name, new HashSet<string>());
+                return new HashSet<string>(GetCellsToRecalculate(name));
+            }
             if (this.cellMap.ContainsKey(name))
             {
-                List<string> temp = new List<string>(set.GetDependents(name));
-                string oldFormula = temp[0];
-                set.RemoveDependency(name, oldFormula);
-
+                set.ReplaceDependents(name, new HashSet<string>());
+                //set.ReplaceDependees(name, new HashSet<string>());
                 this.cellMap[name] = new Cell(name, text, null);
-                //this.cellMap.Add(name, this.cellMap[name] = new Cell(name, text, null));
-                set.AddDependency(name, text);
 
+                return new HashSet<string>(GetCellsToRecalculate(name));
             }
             else
             {
                 this.cellMap[name] = new Cell(name, text, null);
-                //this.cellMap.Add(name, this.cellMap[name] = new Cell(name, text, null));
-                set.AddDependency(name, text);
-            }
-            if (text.Equals(""))
-            {
-                return new HashSet<string>(GetCellsToRecalculate(name));
-            }
 
-
+            }
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
@@ -220,27 +223,56 @@ namespace SS
                 throw new InvalidNameException();
             }
 
+
             if (this.cellMap.ContainsKey(name))
             {
-                List<string> temp = new List<string>(set.GetDependents(name));
-                string oldFormula = temp[0];
-                set.RemoveDependency(name, oldFormula);
+                Cell oldCell = this.cellMap[name];
+                HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
+                //HashSet<string> oldDeeSet = new HashSet<string>(set.GetDependees(name));
 
-                //this.cellMap[name] = new Cell(name, formula, null);
-                this.cellMap.Add(name, this.cellMap[name] = new Cell(name, formula.ToString(), null));
-                set.AddDependency(name, formula.ToString());
 
-                foreach (var token in formula.GetVariables())
+                //set.RemoveDependency(name, GetCellContents(name).ToString());
+                set.ReplaceDependents(name, new HashSet<string>());
+                //set.ReplaceDependees(name, new HashSet<string>());
+                this.cellMap[name] = new Cell(name, formula, null);
+
+                try
                 {
-                    if (varSet.Contains(token))
-                    {
-                        throw new CircularException();
-                    }
+                    return new HashSet<string>(GetCellsToRecalculate(name));
+                }
+                catch (CircularException)
+                {
+                    set.ReplaceDependents(name, oldDentSet);
+                    //set.ReplaceDependees(name, oldDeeSet);
+
+                    this.cellMap[name] = new Cell(oldCell);
+
+                    throw new CircularException();
                 }
             }
-            //this.cellMap[name] = new Cell(name, formula, null);
-            this.cellMap.Add(name, this.cellMap[name] = new Cell(name, formula.ToString(), null));
-            set.AddDependency(name, formula.ToString());
+            else
+            {
+                // Handle for the empty Formula constructor
+                if (formula.Evaluate(x => 0).Equals(0))
+                {
+                    set.AddDependency(name, "0");
+                    this.cellMap[name] = new Cell(name, formula, null);
+                }
+
+                else
+                {
+                    foreach (var form in formula.GetVariables())
+                    {
+                        if (form == null)
+                        {
+                            set.AddDependency(name, form);
+                        }
+                        set.AddDependency(name, form);
+                    }
+                    this.cellMap[name] = new Cell(name, formula, null);
+                }
+
+            }
 
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
@@ -273,16 +305,6 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-
-            //foreach (var cell in this.cellMap.Keys)
-            //{
-            //    if (set.GetDependents(cell).Contains(name))
-            //    {
-            //        linkCell.Add(cell);
-            //    }
-            //}
-
-            //return new HashSet<string>(linkCell);
 
             return new HashSet<string>(set.GetDependents(name));
         }
