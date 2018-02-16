@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dependencies;
 using Formulas;
@@ -59,22 +60,26 @@ namespace SS
         {
             private string name;
             private object content;
+            private object value;
             /// <summary>
             /// 
             /// </summary>
-            public Cell(string name, object content)
+            public Cell(string name, object content, object value)
             {
                 this.name = name;
                 this.content = content;
+                this.value = value;
             }
         }
         const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
+        private Dictionary<string, Cell> cellMap;
 
         /// <summary>
         /// 
         /// </summary>
         public Spreadsheet()
         {
+            this.cellMap = new Dictionary<string, Cell>();
         }
 
         /// <summary>
@@ -83,7 +88,12 @@ namespace SS
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
             HashSet<string> nonEmptyCells = new HashSet<string>();
-            throw new NotImplementedException();
+
+            foreach (var name in cellMap.Keys)
+            {
+                nonEmptyCells.Add(name);
+            }
+            return new HashSet<string>(nonEmptyCells);
         }
 
         /// <summary>
@@ -95,6 +105,14 @@ namespace SS
         public override object GetCellContents(string name)
         {
             HashSet<object> cellContent = new HashSet<object>();
+            if (name == null || !Regex.IsMatch(name, namePattern))
+            {
+                throw new InvalidNameException();
+            }
+            foreach (var content in cellMap.Values)
+            {
+                
+            }
             throw new NotImplementedException();
         }
 
