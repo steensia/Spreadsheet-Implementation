@@ -223,7 +223,7 @@ namespace SS
                 set.AddDependency(name, formula.ToString());
                 this.cellMap.Add(name, new Cell(name, formula, null));
             }
-            throw new NotImplementedException();
+            return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
         /// <summary>
