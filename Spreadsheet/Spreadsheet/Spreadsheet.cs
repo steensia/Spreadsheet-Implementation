@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dependencies;
 using Formulas;
@@ -52,7 +53,7 @@ namespace SS
     /// </summary>
     public class Spreadsheet : AbstractSpreadsheet
     {
-        const String cellPattern = @"[a-zA-Z][0-9a-zA-Z]*";
+        const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
 
         private Dictionary<string, object> cell;
 
@@ -72,16 +73,12 @@ namespace SS
             HashSet<string> nonEmptyCells = new HashSet<string>();
             foreach (var cellName in this.cell.Keys)
             {
-                if(!cellName.Equals(""))
+                if (!cellName.Equals(""))
                 {
                     nonEmptyCells.Add(cellName);
                 }
             }
-            if(nonEmptyCells.Count > 1)
-            {
-                return new HashSet<string>(nonEmptyCells);
-            }
-            return new HashSet<string>(); 
+            return new HashSet<string>(nonEmptyCells);
         }
 
         /// <summary>
@@ -92,23 +89,28 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
-            HashSet<object> cellContent = new HashSet<object>();
-            if (name == null || invalidName())
+            string empty = "";
+            if (name == null || !Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
-            foreach (var content in this.cell.Values)
+            if (this.cell.ContainsKey(name))
             {
-                if (!cellContent.Equals(""))
+                object content = this.cell[name];
+                if (content.GetType() == typeof(string))
                 {
-                    cellContent.Add(content);
+                    return (string) content;
+                }
+                else if (content.GetType() == typeof(double))
+                {
+                    return (double) content;
+                }
+                else if (content.GetType() == typeof(Formula))
+                {
+                    return (Formula) content;
                 }
             }
-            if (cellContent.Count > 1)
-            {
-                return new HashSet<object>(cellContent);
-            }
-            return new HashSet<object>();      
+            return empty;
         }
 
         /// <summary>
@@ -123,16 +125,20 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, double number)
         {
-            if (name == null || invalidName())
+            if (name == null || !Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
-            var oldContents = GetCellContents(name);
-            foreach (var cell in this.cell)
+            else if (this.cell.ContainsKey(name))
             {
-                
+                this.cell[name] = number;
             }
-            throw new NotImplementedException();
+            else
+            {
+                this.cell.Add(name, number);
+            }
+
+            return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
         /// <summary>
@@ -153,11 +159,19 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            if (name == null)
+            else if (name == null || !Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
-            throw new NotImplementedException();
+            else if (this.cell.ContainsKey(name))
+            {
+                this.cell[name] = text;
+            }
+            else
+            {
+                this.cell.Add(name, text);
+            }
+            return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
         /// <summary>
@@ -177,12 +191,19 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
-            if (name == null)
+            if (name == null || !Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
-
-            throw new NotImplementedException();
+            if (this.cell.ContainsKey(name))
+            {
+                this.cell[name] = formula;
+            }
+            else
+            {
+                this.cell.Add(name, formula);
+            }
+            return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
         /// <summary>
@@ -204,20 +225,87 @@ namespace SS
         /// </summary>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
+            HashSet<string> dependencies = new HashSet<string>();
+            DependencyGraph
             if (name == null)
+            {
+                throw new ArgumentNullException();
+            }
+            else if (!Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
+
             throw new NotImplementedException();
         }
-     
-                /// <summary>
-        /// Need to implement to distinguish invalid cell name
+
+        /// <summary>
+        /// Requires that names be non-null.  Also requires that if names contains s,
+        /// then s must be a valid non-null cell name.
+        /// 
+        /// If any of the named cells are involved in a circular dependency,
+        /// throws a CircularException.
+        /// 
+        /// Otherwise, returns an enumeration of the names of all cells whose values must
+        /// be recalculated, assuming that the contents of each cell named in names has changed.
+        /// The names are enumerated in the order in which the calculations should be done.  
+        /// 
+        /// For example, suppose that 
+        /// A1 contains 5
+        /// B1 contains 7
+        /// C1 contains the formula A1 + B1
+        /// D1 contains the formula A1 * C1
+        /// E1 contains 15
+        /// 
+        /// If A1 and B1 have changed, then A1, B1, and C1, and D1 must be recalculated,
+        /// and they must be recalculated in either the order A1,B1,C1,D1 or B1,A1,C1,D1.
+        /// The method will produce one of those enumerations.
+        /// 
+        /// PLEASE NOTE THAT THIS METHOD DEPENDS ON THE ABSTRACT GetDirectDependents.
+        /// IT WON'T WORK UNTIL GetDirectDependents IS IMPLEMENTED CORRECTLY.  YOU WILL
+        /// NOT NEED TO MODIFY THIS METHOD.
         /// </summary>
-        /// <returns></returns>
-        private bool invalidName()
+        protected new IEnumerable<String> GetCellsToRecalculate(ISet<String> names)
         {
-            throw new NotImplementedException();
+            LinkedList<String> changed = new LinkedList<String>();
+            HashSet<String> visited = new HashSet<String>();
+            foreach (String name in names)
+            {
+                if (!visited.Contains(name))
+                {
+                    Visit(name, name, visited, changed);
+                }
+            }
+            return changed;
+        }
+
+        /// <summary>
+        /// A convenience method for invoking the other version of GetCellsToRecalculate
+        /// with a singleton set of names.  See the other version for details.
+        /// </summary>
+        protected new IEnumerable<String> GetCellsToRecalculate(String name)
+        {
+            return GetCellsToRecalculate(new HashSet<String>() { name });
+        }
+
+        /// <summary>
+        /// A helper for the GetCellsToRecalculate method.
+        /// </summary>
+        private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
+        {
+            visited.Add(name);
+            foreach (String n in GetDirectDependents(name))
+            {
+                if (n.Equals(start))
+                {
+                    throw new CircularException();
+                }
+                else if (!visited.Contains(n))
+                {
+                    Visit(start, n, visited, changed);
+                }
+            }
+            changed.AddFirst(name);
         }
     }
 }
