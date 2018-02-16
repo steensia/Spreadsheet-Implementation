@@ -79,7 +79,7 @@ namespace SS
                 this.value = other.value;
             }
         }
-        const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
+        const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*";
         private Dictionary<string, Cell> cellMap;
         private DependencyGraph set;
 
@@ -252,15 +252,6 @@ namespace SS
             }
             else
             {
-                // Handle for the empty Formula constructor
-                if (formula.Evaluate(x => 0).Equals(0))
-                {
-                    set.AddDependency(name, "0");
-                    this.cellMap[name] = new Cell(name, formula, null);
-                }
-
-                else
-                {
                     foreach (var form in formula.GetVariables())
                     {
                         if (form == null)
@@ -270,7 +261,6 @@ namespace SS
                         set.AddDependency(name, form);
                     }
                     this.cellMap[name] = new Cell(name, formula, null);
-                }
 
             }
 

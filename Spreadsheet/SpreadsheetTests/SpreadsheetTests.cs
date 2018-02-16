@@ -164,14 +164,12 @@ namespace SpreadsheetTests
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(CircularException))]
-        public void SetCellContentsFormula()
+        public void CircularException2()
         {
             Spreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", new Formula("B2"));
             s.SetCellContents("B2", new Formula("B3"));
             s.SetCellContents("B2", new Formula("A1"));
-            Assert.AreEqual("B2", s.GetCellContents("A1"));
-            Assert.AreEqual("B3", s.GetCellContents("B2"));
         }
     }
 }
