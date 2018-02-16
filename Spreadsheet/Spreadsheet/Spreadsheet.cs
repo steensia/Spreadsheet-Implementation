@@ -58,9 +58,9 @@ namespace SS
         /// </summary>
         private struct Cell
         {
-            private string name;
-            private object content;
-            private object value;
+            public string name;
+            public object content;
+            public object value;
             /// <summary>
             /// 
             /// </summary>
@@ -73,6 +73,7 @@ namespace SS
         }
         const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
         private Dictionary<string, Cell> cellMap;
+        private DependencyGraph set;
 
         /// <summary>
         /// 
@@ -80,6 +81,7 @@ namespace SS
         public Spreadsheet()
         {
             this.cellMap = new Dictionary<string, Cell>();
+            set = new DependencyGraph();
         }
 
         /// <summary>
@@ -104,16 +106,15 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
-            HashSet<object> cellContent = new HashSet<object>();
             if (name == null || !Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
-            foreach (var content in cellMap.Values)
+            if (this.cellMap[name].content.Equals(null))
             {
-                
+                return "";
             }
-            throw new NotImplementedException();
+            return this.cellMap[name].content;
         }
 
         /// <summary>
@@ -128,11 +129,21 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, double number)
         {
-            if (name == null || invalidName())
+            if (name == null || !Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
-            throw new NotImplementedException();
+            if (!this.cellMap.ContainsKey(name))
+            {
+                set.AddDependency(name, number.ToString());
+                this.cellMap.Add(name, new Cell(name, number, null));
+            }
+            else
+            {
+                set.AddDependency(name, number.ToString());
+                this.cellMap[name] = new Cell(name, number, null);
+            }
+            return new HashSet<string>(GetCellsToRecalculate(name));           
         }
 
         /// <summary>
@@ -153,11 +164,21 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            if (name == null)
+            if (name == null || !Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
-            throw new NotImplementedException();
+            if (!this.cellMap.ContainsKey(name))
+            {
+                set.AddDependency(name, text);
+                this.cellMap.Add(name, new Cell(name, text, null));
+            }
+            else
+            {
+                set.AddDependency(name, text);
+                this.cellMap[name] = new Cell(name, text, null);
+            }
+            return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
         /// <summary>
@@ -177,11 +198,31 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
-            if (name == null)
+            HashSet<string> varSet = new HashSet<string>(formula.GetVariables());
+            foreach (var variable in varSet)
+            {
+                if (!Regex.IsMatch(variable, namePattern))
+                {
+                    return null;
+                }
+            }
+            if (name == null || !Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
+            if (this.cellMap.ContainsKey(name))
+            {
+                set.RemoveDependency(name, formula.ToString());
+                set.AddDependency(name, formula.ToString());
 
+                this.cellMap[name] = new Cell(name, formula, null);
+                
+            }
+            else
+            {
+                set.AddDependency(name, formula.ToString());
+                this.cellMap.Add(name, new Cell(name, formula, null));
+            }
             throw new NotImplementedException();
         }
 
@@ -206,18 +247,13 @@ namespace SS
         {
             if (name == null)
             {
+                throw new ArgumentNullException();
+            }
+            else if (!Regex.IsMatch(name, namePattern))
+            {
                 throw new InvalidNameException();
             }
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Need to implement to distinguish invalid cell name
-        /// </summary>
-        /// <returns></returns>
-        private bool invalidName()
-        {
-            throw new NotImplementedException();
+            return set.GetDependents(name);
         }
     }
 }
