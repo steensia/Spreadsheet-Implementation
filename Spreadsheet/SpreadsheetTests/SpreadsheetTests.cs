@@ -24,7 +24,6 @@ namespace SpreadsheetTests
         /// Check if GetCellContents returns the correct string
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(InvalidNameException))]
         public void GetCellContents1()
         {
             Spreadsheet sheet = new Spreadsheet();
@@ -36,37 +35,34 @@ namespace SpreadsheetTests
         /// Check if GetCellContents returns the correct double
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(InvalidNameException))]
         public void GetCellContents2()
         {
             Spreadsheet sheet = new Spreadsheet();
-            sheet.SetCellContents("A1", 7);
-            Assert.AreEqual(7, sheet.GetCellContents("A1"));
+            sheet.SetCellContents("A1", 7.0);
+            Assert.AreEqual(7.0, sheet.GetCellContents("A1"));
         }
 
         /// <summary>
         /// Check if GetCellContents returns the correct formula with default constructor
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(InvalidNameException))]
         public void GetCellContents3()
         {
             Spreadsheet sheet = new Spreadsheet();
             Formula defConstruct = new Formula();
-            sheet.SetCellContents("A1", defConstruct);
-            Assert.AreEqual("", sheet.GetCellContents("A1"));
+            sheet.SetCellContents("A1", defConstruct.ToString());
+            Assert.AreEqual("0", sheet.GetCellContents("A1"));
         }
 
         /// <summary>
         /// Check if GetCellContents returns the correct formula with old constructor
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(InvalidNameException))]
         public void GetCellContents4()
         {
             Spreadsheet sheet = new Spreadsheet();
             Formula defConstruct = new Formula("X + Y");
-            sheet.SetCellContents("A1", defConstruct);
+            sheet.SetCellContents("A1", defConstruct.ToString());
             Assert.AreEqual("X+Y", sheet.GetCellContents("A1"));
         }
 
@@ -101,6 +97,18 @@ namespace SpreadsheetTests
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetCellContents(null, "x");
+        }
+
+        /// <summary>
+        /// Check if for CircularException
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void CircularException1()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A1", new Formula("B2"));
+            s.SetCellContents("B2", new Formula("A1+B3"));
         }
     }
 }

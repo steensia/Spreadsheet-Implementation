@@ -110,10 +110,11 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-            if (this.cellMap[name].content.Equals(null))
+            if (!this.cellMap.ContainsKey(name))
             {
                 return "";
             }
+
             return this.cellMap[name].content;
         }
 
@@ -135,15 +136,16 @@ namespace SS
             }
             if (!this.cellMap.ContainsKey(name))
             {
-                set.AddDependency(name, number.ToString());
                 this.cellMap.Add(name, new Cell(name, number, null));
+                set.AddDependency(name, number.ToString());          
             }
             else
             {
-                set.AddDependency(name, number.ToString());
                 this.cellMap[name] = new Cell(name, number, null);
+                set.AddDependency(name, number.ToString());
             }
-            return new HashSet<string>(GetCellsToRecalculate(name));           
+
+            return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
         /// <summary>
@@ -168,16 +170,28 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-            if (!this.cellMap.ContainsKey(name))
+
+
+            if (this.cellMap.ContainsKey(name))
             {
+                List<string> temp = new List<string>(set.GetDependents(name));
+                string oldFormula = temp[0];
+                set.RemoveDependency(name, oldFormula);
+
+                this.cellMap[name] = new Cell(name, text, null);
                 set.AddDependency(name, text);
-                this.cellMap.Add(name, new Cell(name, text, null));
+                
+            }
+                        if (text.Equals(""))
+            {
+                return new HashSet<string>(GetCellsToRecalculate(name));
             }
             else
             {
-                set.AddDependency(name, text);
                 this.cellMap[name] = new Cell(name, text, null);
+                set.AddDependency(name, text);
             }
+
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
@@ -198,31 +212,32 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
-            HashSet<string> varSet = new HashSet<string>(formula.GetVariables());
-            foreach (var variable in varSet)
-            {
-                if (!Regex.IsMatch(variable, namePattern))
-                {
-                    return null;
-                }
-            }
+            HashSet<string> varSet = new HashSet<string>(GetNamesOfAllNonemptyCells());
             if (name == null || !Regex.IsMatch(name, namePattern))
             {
                 throw new InvalidNameException();
             }
+
             if (this.cellMap.ContainsKey(name))
             {
-                set.RemoveDependency(name, formula.ToString());
-                set.AddDependency(name, formula.ToString());
+                List<string> temp = new List<string>(set.GetDependents(name));
+                string oldFormula = temp[0];
+                set.RemoveDependency(name, oldFormula);
 
                 this.cellMap[name] = new Cell(name, formula, null);
-                
-            }
-            else
-            {
                 set.AddDependency(name, formula.ToString());
-                this.cellMap.Add(name, new Cell(name, formula, null));
+
+                foreach (var token in formula.GetVariables())
+                {
+                    if (varSet.Contains(token))
+                    {
+                        throw new CircularException();
+                    }
+                }   
             }
+            this.cellMap[name] = new Cell(name, formula, null);
+            set.AddDependency(name, formula.ToString());
+
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
@@ -245,6 +260,7 @@ namespace SS
         /// </summary>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
+            HashSet<string> linkCell = new HashSet<string>();
             if (name == null)
             {
                 throw new ArgumentNullException();
@@ -253,7 +269,85 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-            return set.GetDependents(name);
+
+            foreach (var cell in this.cellMap.Keys)
+            {
+                if (set.GetDependents(cell).Contains(name))
+                {
+                    linkCell.Add(cell);
+                }
+            }
+
+            return new HashSet<string>(linkCell);
+        }
+
+        /// <summary>
+        /// Requires that names be non-null.  Also requires that if names contains s,
+        /// then s must be a valid non-null cell name.
+        /// 
+        /// If any of the named cells are involved in a circular dependency,
+        /// throws a CircularException.
+        /// 
+        /// Otherwise, returns an enumeration of the names of all cells whose values must
+        /// be recalculated, assuming that the contents of each cell named in names has changed.
+        /// The names are enumerated in the order in which the calculations should be done.  
+        /// 
+        /// For example, suppose that 
+        /// A1 contains 5
+        /// B1 contains 7
+        /// C1 contains the formula A1 + B1
+        /// D1 contains the formula A1 * C1
+        /// E1 contains 15
+        /// 
+        /// If A1 and B1 have changed, then A1, B1, and C1, and D1 must be recalculated,
+        /// and they must be recalculated in either the order A1,B1,C1,D1 or B1,A1,C1,D1.
+        /// The method will produce one of those enumerations.
+        /// 
+        /// PLEASE NOTE THAT THIS METHOD DEPENDS ON THE ABSTRACT GetDirectDependents.
+        /// IT WON'T WORK UNTIL GetDirectDependents IS IMPLEMENTED CORRECTLY.  YOU WILL
+        /// NOT NEED TO MODIFY THIS METHOD.
+        /// </summary>
+        protected IEnumerable<String> GetCellsToRecalculate(ISet<String> names)
+        {
+            LinkedList<String> changed = new LinkedList<String>();
+            HashSet<String> visited = new HashSet<String>();
+            foreach (String name in names)
+            {
+                if (!visited.Contains(name))
+                {
+                    Visit(name, name, visited, changed);
+                }
+            }
+            return changed;
+        }
+
+        /// <summary>
+        /// A convenience method for invoking the other version of GetCellsToRecalculate
+        /// with a singleton set of names.  See the other version for details.
+        /// </summary>
+        protected IEnumerable<String> GetCellsToRecalculate(String name)
+        {
+            return GetCellsToRecalculate(new HashSet<String>() { name });
+        }
+
+        /// <summary>
+        /// A helper for the GetCellsToRecalculate method.
+        /// </summary>
+        private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
+        {
+            visited.Add(name);
+            foreach (String n in GetDirectDependents(name))
+            {
+                if (n.Equals(start))
+                {
+                    throw new CircularException();
+                }
+                else if (!visited.Contains(n))
+                {
+                    Visit(start, n, visited, changed);
+                }
+            }
+            changed.AddFirst(name);
         }
     }
 }
