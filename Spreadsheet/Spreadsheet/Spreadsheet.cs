@@ -71,7 +71,7 @@ namespace SS
                 this.value = value;
             }
         }
-        const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
+        const String namePattern = @"[a-zA-Z]+[1-9][0-9]*";
         private Dictionary<string, Cell> cellMap;
         private DependencyGraph set;
 
@@ -81,7 +81,7 @@ namespace SS
         public Spreadsheet()
         {
             this.cellMap = new Dictionary<string, Cell>();
-            set = new DependencyGraph();
+            this.set = new DependencyGraph();
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace SS
             if (!this.cellMap.ContainsKey(name))
             {
                 this.cellMap.Add(name, new Cell(name, number, null));
-                set.AddDependency(name, number.ToString());          
+                set.AddDependency(name, number.ToString());
             }
             else
             {
@@ -171,7 +171,6 @@ namespace SS
                 throw new InvalidNameException();
             }
 
-
             if (this.cellMap.ContainsKey(name))
             {
                 List<string> temp = new List<string>(set.GetDependents(name));
@@ -179,18 +178,21 @@ namespace SS
                 set.RemoveDependency(name, oldFormula);
 
                 this.cellMap[name] = new Cell(name, text, null);
+                //this.cellMap.Add(name, this.cellMap[name] = new Cell(name, text, null));
                 set.AddDependency(name, text);
-                
-            }
-                        if (text.Equals(""))
-            {
-                return new HashSet<string>(GetCellsToRecalculate(name));
+
             }
             else
             {
                 this.cellMap[name] = new Cell(name, text, null);
+                //this.cellMap.Add(name, this.cellMap[name] = new Cell(name, text, null));
                 set.AddDependency(name, text);
             }
+            if (text.Equals(""))
+            {
+                return new HashSet<string>(GetCellsToRecalculate(name));
+            }
+
 
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
@@ -224,7 +226,8 @@ namespace SS
                 string oldFormula = temp[0];
                 set.RemoveDependency(name, oldFormula);
 
-                this.cellMap[name] = new Cell(name, formula, null);
+                //this.cellMap[name] = new Cell(name, formula, null);
+                this.cellMap.Add(name, this.cellMap[name] = new Cell(name, formula.ToString(), null));
                 set.AddDependency(name, formula.ToString());
 
                 foreach (var token in formula.GetVariables())
@@ -233,9 +236,10 @@ namespace SS
                     {
                         throw new CircularException();
                     }
-                }   
+                }
             }
-            this.cellMap[name] = new Cell(name, formula, null);
+            //this.cellMap[name] = new Cell(name, formula, null);
+            this.cellMap.Add(name, this.cellMap[name] = new Cell(name, formula.ToString(), null));
             set.AddDependency(name, formula.ToString());
 
             return new HashSet<string>(GetCellsToRecalculate(name));
@@ -270,84 +274,17 @@ namespace SS
                 throw new InvalidNameException();
             }
 
-            foreach (var cell in this.cellMap.Keys)
-            {
-                if (set.GetDependents(cell).Contains(name))
-                {
-                    linkCell.Add(cell);
-                }
-            }
+            //foreach (var cell in this.cellMap.Keys)
+            //{
+            //    if (set.GetDependents(cell).Contains(name))
+            //    {
+            //        linkCell.Add(cell);
+            //    }
+            //}
 
-            return new HashSet<string>(linkCell);
-        }
+            //return new HashSet<string>(linkCell);
 
-        /// <summary>
-        /// Requires that names be non-null.  Also requires that if names contains s,
-        /// then s must be a valid non-null cell name.
-        /// 
-        /// If any of the named cells are involved in a circular dependency,
-        /// throws a CircularException.
-        /// 
-        /// Otherwise, returns an enumeration of the names of all cells whose values must
-        /// be recalculated, assuming that the contents of each cell named in names has changed.
-        /// The names are enumerated in the order in which the calculations should be done.  
-        /// 
-        /// For example, suppose that 
-        /// A1 contains 5
-        /// B1 contains 7
-        /// C1 contains the formula A1 + B1
-        /// D1 contains the formula A1 * C1
-        /// E1 contains 15
-        /// 
-        /// If A1 and B1 have changed, then A1, B1, and C1, and D1 must be recalculated,
-        /// and they must be recalculated in either the order A1,B1,C1,D1 or B1,A1,C1,D1.
-        /// The method will produce one of those enumerations.
-        /// 
-        /// PLEASE NOTE THAT THIS METHOD DEPENDS ON THE ABSTRACT GetDirectDependents.
-        /// IT WON'T WORK UNTIL GetDirectDependents IS IMPLEMENTED CORRECTLY.  YOU WILL
-        /// NOT NEED TO MODIFY THIS METHOD.
-        /// </summary>
-        protected IEnumerable<String> GetCellsToRecalculate(ISet<String> names)
-        {
-            LinkedList<String> changed = new LinkedList<String>();
-            HashSet<String> visited = new HashSet<String>();
-            foreach (String name in names)
-            {
-                if (!visited.Contains(name))
-                {
-                    Visit(name, name, visited, changed);
-                }
-            }
-            return changed;
-        }
-
-        /// <summary>
-        /// A convenience method for invoking the other version of GetCellsToRecalculate
-        /// with a singleton set of names.  See the other version for details.
-        /// </summary>
-        protected IEnumerable<String> GetCellsToRecalculate(String name)
-        {
-            return GetCellsToRecalculate(new HashSet<String>() { name });
-        }
-
-        /// <summary>
-        /// A helper for the GetCellsToRecalculate method.
-        /// </summary>
-        private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
-        {
-            visited.Add(name);
-            foreach (String n in GetDirectDependents(name))
-            {
-                if (n.Equals(start))
-                {
-                    throw new CircularException();
-                }
-                else if (!visited.Contains(n))
-                {
-                    Visit(start, n, visited, changed);
-                }
-            }
-            changed.AddFirst(name);
+            return new HashSet<string>(set.GetDependents(name));
         }
     }
 }

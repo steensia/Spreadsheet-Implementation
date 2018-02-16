@@ -67,6 +67,18 @@ namespace SpreadsheetTests
         }
 
         /// <summary>
+        /// Check GetCellContents on no existing cell
+        /// </summary>
+        [TestMethod]
+        public void GetCellContents5()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            Formula defConstruct = new Formula("X + Y");
+            sheet.SetCellContents("A1", defConstruct.ToString());
+            Assert.AreEqual("", sheet.GetCellContents("B1"));
+        }
+
+        /// <summary>
         /// Check if SetCellContents throws an InvalidNameException when name is null or invalid
         /// </summary>
         [TestMethod]
@@ -109,6 +121,29 @@ namespace SpreadsheetTests
             Spreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", new Formula("B2"));
             s.SetCellContents("B2", new Formula("A1+B3"));
+        }
+
+        /// <summary>
+        /// Check if SetCellContents creates a new cell with string content
+        /// </summary>
+        [TestMethod]
+        public void SetCellContentsString()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("A7", "ok");
+            Assert.AreEqual("ok", sheet.GetCellContents("A7"));
+        }
+
+        /// <summary>
+        /// Check if SetCellContents replaces string content of existing cell 
+        /// </summary>
+        [TestMethod]
+        public void SetCellContentsString2()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("A7", "ok");
+            sheet.SetCellContents("A7", "");
+            Assert.AreEqual("ok", sheet.GetCellContents("A7"));
         }
     }
 }
