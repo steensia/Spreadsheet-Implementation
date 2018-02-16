@@ -52,9 +52,5 @@ namespace SpreadsheetTests
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetCellContents(null, "x");
         }
-
-        public 
-
-
     }
 }
