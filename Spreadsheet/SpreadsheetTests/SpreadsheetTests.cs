@@ -21,6 +21,72 @@ namespace SpreadsheetTests
         }
 
         /// <summary>
+        /// Check if all valid cells are returned
+        /// </summary>
+        [TestMethod]
+        public void GetNamesOfAllNonemptyCells()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("C2", 3);
+            s.SetCellContents("C2", "");
+            HashSet<string> cellNames = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(cellNames.SetEquals(new HashSet<string>()));
+        }
+
+        /// <summary>
+        /// Check if all valid cells are returned
+        /// </summary>
+        [TestMethod]
+        public void GetNamesOfAllNonemptyCells1()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A1", 5);
+            s.SetCellContents("B2", "x2");
+            s.SetCellContents("C3", new Formula("D7"));
+            s.SetCellContents("D4", new Formula("F9"));
+            HashSet<string> cellNames = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(cellNames.SetEquals(new HashSet<string> { "A1", "B2", "C3", "D4" }));
+        }
+
+        /// <summary>
+        /// Check if all valid cells are returned
+        /// </summary>
+        [TestMethod]
+        public void GetNamesOfAllNonemptyCells2()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A1", new Formula("B3"));
+            s.SetCellContents("B2", new Formula("C5"));
+            s.SetCellContents("C3", new Formula("D7"));
+            s.SetCellContents("D4", new Formula("F9"));
+            s.SetCellContents("D4", "");
+            HashSet<string> cellNames = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(cellNames.SetEquals(new HashSet<string> { "A1", "B2", "C3" }));
+        }
+
+        /// <summary>
+        /// Check if all valid cells are returned
+        /// </summary>
+        [TestMethod]
+        public void GetNamesOfAllNonemptyCells3()
+        {
+            Spreadsheet s = new Spreadsheet();
+            HashSet<string> t = new HashSet<string>();
+            for (int i = 0; i < 25; i++)
+            {
+                s.SetCellContents("A1" + i, "B2" + i);
+                t.Add("A1" + i);
+            }
+            for (int i = 7; i < 12; i++)
+            {
+                t.Remove("A1" + i);
+                s.SetCellContents("A1" + i, "");
+            }
+            HashSet<string> cellNames = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(cellNames.SetEquals(t));
+        }
+
+        /// <summary>
         /// Check if GetCellContents returns the correct string
         /// </summary>
         [TestMethod]
@@ -112,7 +178,7 @@ namespace SpreadsheetTests
         }
 
         /// <summary>
-        /// Check if for CircularException
+        /// Check if CircularException is thrown
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(CircularException))]
@@ -157,6 +223,41 @@ namespace SpreadsheetTests
             sheet.SetCellContents("A1", "a");
             sheet.SetCellContents("A7", "");
             Assert.AreEqual("", sheet.GetCellContents("A7"));
+        }
+
+        /// <summary>
+        /// Check if SetCellContents puts a double in cell content
+        /// </summary>
+        [TestMethod]
+        public void SetCellContentsDouble1()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("A1", 10);
+            Assert.AreEqual(10.0, sheet.GetCellContents("A1"));
+        }
+
+        /// <summary>
+        /// Check if SetCellContents replaces double content of existing cell 
+        /// </summary>
+        [TestMethod]
+        public void SetCellContentsDouble2()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("A7", 5);
+            sheet.SetCellContents("A1", 10);
+            sheet.SetCellContents("A7", 3);
+            Assert.AreEqual(3.0, sheet.GetCellContents("A7"));
+        }
+
+        /// <summary>
+        /// Check if SetCellContents formula evaluates to correct answer
+        /// </summary>
+        [TestMethod]
+        public void SetCellContentsFormula()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("A1", new Formula());
+            Assert.AreEqual(0.0, sheet.GetCellContents("A1"));
         }
 
         /// <summary>

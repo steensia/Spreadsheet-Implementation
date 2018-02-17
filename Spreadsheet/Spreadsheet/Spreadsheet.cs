@@ -99,9 +99,12 @@ namespace SS
         {
             HashSet<string> nonEmptyCells = new HashSet<string>();
 
-            foreach (var name in cellMap.Keys)
+            foreach (var name in cellMap)
             {
-                nonEmptyCells.Add(name);
+                if (!name.Value.content.Equals(""))
+                {
+                    nonEmptyCells.Add(name.Key);
+                }
             }
             return new HashSet<string>(nonEmptyCells);
         }
@@ -182,20 +185,20 @@ namespace SS
             {
                 //set.RemoveDependency(name, GetCellContents(name).ToString());
                 set.ReplaceDependents(name, new HashSet<string>());
-                return new HashSet<string>(GetCellsToRecalculate(name));
+                this.cellMap[name] = new Cell(name, text, null);
+                //return new HashSet<string>(GetCellsToRecalculate(name));
             }
-            if (this.cellMap.ContainsKey(name))
+            else if (this.cellMap.ContainsKey(name))
             {
                 set.ReplaceDependents(name, new HashSet<string>());
                 //set.ReplaceDependees(name, new HashSet<string>());
                 this.cellMap[name] = new Cell(name, text, null);
 
-                return new HashSet<string>(GetCellsToRecalculate(name));
+                //return new HashSet<string>(GetCellsToRecalculate(name));
             }
             else
             {
                 this.cellMap[name] = new Cell(name, text, null);
-
             }
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
