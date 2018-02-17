@@ -65,19 +65,19 @@ namespace SpreadsheetTests
         }
 
         /// <summary>
-        /// Check if all valid cells are returned
+        /// Check if all valid cells are returned, stress test
         /// </summary>
         [TestMethod]
         public void GetNamesOfAllNonemptyCells3()
         {
             Spreadsheet s = new Spreadsheet();
             HashSet<string> t = new HashSet<string>();
-            for (int i = 0; i < 25; i++)
+            for (int i = 0; i < 1_000_000; i++)
             {
                 s.SetCellContents("A1" + i, "B2" + i);
                 t.Add("A1" + i);
             }
-            for (int i = 7; i < 12; i++)
+            for (int i = 777; i < 777_777; i++)
             {
                 t.Remove("A1" + i);
                 s.SetCellContents("A1" + i, "");
@@ -145,7 +145,18 @@ namespace SpreadsheetTests
         }
 
         /// <summary>
-        /// Check if SetCellContents throws an InvalidNameException when name is null or invalid
+        /// Check if SetCellContents throws an InvalidNameException when name is invalid
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContentsInvalidName()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("mm", 20);
+        }
+
+        /// <summary>
+        /// Check if SetCellContents throws an InvalidNameException when name is null 
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(InvalidNameException))]
@@ -189,6 +200,20 @@ namespace SpreadsheetTests
             s.SetCellContents("B2", new Formula("A1+B3"));
         }
 
+
+        /// <summary>
+        /// Check if for CircularException is caught and previous state is maintained
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void CircularException2()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A1", new Formula("B2"));
+            s.SetCellContents("B2", new Formula("B3+4"));
+            s.SetCellContents("B2", new Formula("A1"));
+        }
+
         /// <summary>
         /// Check if SetCellContents creates a new cell with string content
         /// </summary>
@@ -208,15 +233,28 @@ namespace SpreadsheetTests
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetCellContents("A7", "ok");
+            sheet.SetCellContents("A7", "cow");
+            sheet.SetCellContents("A7", "xD");
+            Assert.AreEqual("xD", sheet.GetCellContents("A7"));
+        }
+
+        /// <summary>
+        /// Check if SetCellContents replaces string content of existing cell with empty string
+        /// </summary>
+        [TestMethod]
+        public void SetCellContentsString3()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("A7", "ok");
             sheet.SetCellContents("A7", "");
-            Assert.AreEqual("ok", sheet.GetCellContents("A7"));
+            Assert.AreEqual("", sheet.GetCellContents("A7"));
         }
 
         /// <summary>
         /// Check if SetCellContents replaces string content of existing cell 
         /// </summary>
         [TestMethod]
-        public void SetCellContentsString3()
+        public void SetCellContentsString4()
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetCellContents("A7", new Formula());
@@ -257,20 +295,40 @@ namespace SpreadsheetTests
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetCellContents("A1", new Formula());
-            Assert.AreEqual(0.0, sheet.GetCellContents("A1"));
+            Formula f = (Formula) sheet.GetCellContents("A1");
+            Assert.AreEqual(0.0, f.Evaluate(x => 0));
         }
 
         /// <summary>
-        /// Check if for CircularException is caught and previous state is maintained
+        /// Check if SetCellContents formula evaluates to correct answer, stress test 1
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(CircularException))]
-        public void CircularException2()
+        public void SetCellContentsFormula1()
         {
-            Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A1", new Formula("B2"));
-            s.SetCellContents("B2", new Formula("B3"));
-            s.SetCellContents("B2", new Formula("A1"));
+            Spreadsheet sheet = new Spreadsheet();
+            for (int i = 1; i <= 100; i++)
+            {
+                sheet.SetCellContents("x" + i, new Formula("A+" + i * 2));
+                Formula temp = (Formula) (sheet.GetCellContents("x" + i));
+                Assert.AreEqual(i * 2, temp.Evaluate( x => 0));
+            }
+            
+        }
+
+        /// <summary>
+        /// Check if SetCellContents formula evaluates to correct answer, stress test 2
+        /// </summary>
+        [TestMethod]
+        public void SetCellContentsFormula2()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            for (int i = 1; i <= 1_000; i++)
+            {
+                sheet.SetCellContents("A" + i + i, new Formula("A+" + i * 2 * i + "/ 2"));
+                Formula temp = (Formula)(sheet.GetCellContents("A" + i + i));
+                Assert.AreEqual(3 + i * 2 * i / 2, temp.Evaluate(x => 3));
+            }
+
         }
     }
 }
