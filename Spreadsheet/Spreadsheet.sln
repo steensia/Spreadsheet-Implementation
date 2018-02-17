@@ -3,7 +3,29 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyGraph", "DependencyGraph\DependencyGraph.csproj", "{862EAD85-346F-4D2B-A53C-98074FF813BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS3GradingTests", "PS3GradingTests\PS3GradingTests.csproj", "{0BB0FEFF-986E-496F-9939-8A52E52E083F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyGraphTestCases", "DependencyGraphTestCases\DependencyGraphTestCases.csproj", "{6A8EE5F7-8A92-49C4-8862-3E56595495F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyPS4bTests", "MyPS4bTests\MyPS4bTests.csproj", "{532A24B6-2D77-4596-BB3F-5E665F63BC9E}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spreadsheet", "Spreadsheet\Spreadsheet.csproj", "{9025A594-DF2A-4E6A-B8C2-F087ECC3E203}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Formula", "Formula\Formula.csproj", "{D43D998C-9797-4CF4-9BB0-6DE22753849A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormulaSimpleTests", "FormulaSimpleTests\FormulaSimpleTests.csproj", "{707DFAA0-3BB3-4896-AF50-0A4D6D580D06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS2GradingTests", "PS2GradingTests\PS2GradingTests.csproj", "{5F69302B-DF29-42D2-BFE2-4A168FF4F588}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS4aGradingTests", "PS4aGradingTests\PS4aGradingTests.csproj", "{BAF269F6-6B3D-4319-AAD5-B163DE642AE2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyPS4aTests", "MyPS4aTests\MyPS4aTests.csproj", "{484FA010-E277-473C-8553-9AB86E1BB517}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetTests", "SpreadsheetTests\SpreadsheetTests.csproj", "{D817F369-438A-4A7A-AE98-B95117B1A503}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PS4bGradingTests", "PS4bGradingTests\PS4bGradingTests.csproj", "{569885E5-B1A3-43C7-95DD-A3351B576AD6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +33,52 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{862EAD85-346F-4D2B-A53C-98074FF813BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{862EAD85-346F-4D2B-A53C-98074FF813BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{862EAD85-346F-4D2B-A53C-98074FF813BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{862EAD85-346F-4D2B-A53C-98074FF813BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BB0FEFF-986E-496F-9939-8A52E52E083F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BB0FEFF-986E-496F-9939-8A52E52E083F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BB0FEFF-986E-496F-9939-8A52E52E083F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BB0FEFF-986E-496F-9939-8A52E52E083F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A8EE5F7-8A92-49C4-8862-3E56595495F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A8EE5F7-8A92-49C4-8862-3E56595495F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A8EE5F7-8A92-49C4-8862-3E56595495F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A8EE5F7-8A92-49C4-8862-3E56595495F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{532A24B6-2D77-4596-BB3F-5E665F63BC9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{532A24B6-2D77-4596-BB3F-5E665F63BC9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{532A24B6-2D77-4596-BB3F-5E665F63BC9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{532A24B6-2D77-4596-BB3F-5E665F63BC9E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9025A594-DF2A-4E6A-B8C2-F087ECC3E203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9025A594-DF2A-4E6A-B8C2-F087ECC3E203}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9025A594-DF2A-4E6A-B8C2-F087ECC3E203}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9025A594-DF2A-4E6A-B8C2-F087ECC3E203}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D43D998C-9797-4CF4-9BB0-6DE22753849A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D43D998C-9797-4CF4-9BB0-6DE22753849A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D43D998C-9797-4CF4-9BB0-6DE22753849A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{707DFAA0-3BB3-4896-AF50-0A4D6D580D06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{707DFAA0-3BB3-4896-AF50-0A4D6D580D06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F69302B-DF29-42D2-BFE2-4A168FF4F588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F69302B-DF29-42D2-BFE2-4A168FF4F588}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAF269F6-6B3D-4319-AAD5-B163DE642AE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAF269F6-6B3D-4319-AAD5-B163DE642AE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAF269F6-6B3D-4319-AAD5-B163DE642AE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAF269F6-6B3D-4319-AAD5-B163DE642AE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{484FA010-E277-473C-8553-9AB86E1BB517}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{484FA010-E277-473C-8553-9AB86E1BB517}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{484FA010-E277-473C-8553-9AB86E1BB517}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D817F369-438A-4A7A-AE98-B95117B1A503}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D817F369-438A-4A7A-AE98-B95117B1A503}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D817F369-438A-4A7A-AE98-B95117B1A503}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D817F369-438A-4A7A-AE98-B95117B1A503}.Release|Any CPU.Build.0 = Release|Any CPU
+		{569885E5-B1A3-43C7-95DD-A3351B576AD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{569885E5-B1A3-43C7-95DD-A3351B576AD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{569885E5-B1A3-43C7-95DD-A3351B576AD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{569885E5-B1A3-43C7-95DD-A3351B576AD6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {8E78F5F6-A23F-4272-B37C-F159D1F8209E}
+		SolutionGuid = {3701C66D-6E10-497D-A1AD-1F4B5A163612}
 	EndGlobalSection
 EndGlobal

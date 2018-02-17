@@ -11,6 +11,7 @@
 //           Add a new abstract method AbstractSpreadsheet.SetContentsOfCell
 //           Change the three AbstractSpreadsheet.SetCellContents methods to be protected
 
+using Formulas;
 using System;
 using System.Collections.Generic;
 using Formulas;
