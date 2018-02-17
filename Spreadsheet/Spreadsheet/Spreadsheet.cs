@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,16 +12,25 @@ using Formulas;
 namespace SS
 {
     /// <summary>
-    /// A spreadsheet class implements an AbstractSpreadsheet. This class consists of an infinite 
+    /// An AbstractSpreadsheet object represents the state of a simple spreadsheet.  A 
+    /// spreadsheet consists of a regular expression (called IsValid below) and an infinite 
     /// number of named cells.
     /// 
-    /// A string s is a valid cell name if and only if it consists of one or more letters, 
-    /// followed by a non-zero digit, followed by zero or more digits.
+    /// A string is a valid cell name if and only if (1) s consists of one or more letters, 
+    /// followed by a non-zero digit, followed by zero or more digits AND (2) the C#
+    /// expression IsValid.IsMatch(s.ToUpper()) is true.
     /// 
-    /// For example, "A15", "a15", "XY32", and "BC7" are valid cell names.  On the other hand, 
-    /// "Z", "X07", and "hello" are not valid cell names.
+    /// For example, "A15", "a15", "XY32", and "BC7" are valid cell names, so long as they also
+    /// are accepted by IsValid.  On the other hand, "Z", "X07", and "hello" are not valid cell 
+    /// names, regardless of IsValid.
     /// 
-    /// A spreadsheet contains a cell corresponding to every possible cell name.  
+    /// Any valid incoming cell name, whether passed as a parameter or embedded in a formula,
+    /// must be normalized by converting all letters to upper case before it is used by this 
+    /// this spreadsheet.  For example, the Formula "x3+a5" should be normalize to "X3+A5" before 
+    /// use.  Similarly, all cell names and Formulas that are returned or written to a file must also
+    /// be normalized.
+    /// 
+    /// A spreadsheet contains a unique cell corresponding to every possible cell name.  
     /// In addition to a name, each cell has a contents and a value.  The distinction is
     /// important, and it is important that you understand the distinction and use
     /// the right term when writing code, writing comments, and asking questions.
@@ -62,6 +72,11 @@ namespace SS
         const String cellNamePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
 
         /// <summary>
+        /// 
+        /// </summary>
+        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
+
+        /// <summary>
         /// Private struct Cell that contains a name, content, and value to represent in a spreadsheet
         /// </summary>
         private struct Cell
@@ -83,7 +98,6 @@ namespace SS
             /// <summary>
             /// New constructor to copy the contents of passed in Cell
             /// </summary>
-            /// <param name="other"></param>
             public Cell(Cell other)
             {
                 this.name = other.name;
@@ -93,13 +107,53 @@ namespace SS
         }
 
         /// <summary>
-        /// Default spreedsheet constructor
+        /// Creates an empty Spreadsheet whose IsValid regular expression accepts every string.
         /// A Spreadsheet contains a cell and each cell keeps tracks of its dependencies
         /// </summary>
         public Spreadsheet()
         {
             this.cellMap = new Dictionary<string, Cell>();
             this.set = new DependencyGraph();
+        }
+
+        /// Creates an empty Spreadsheet whose IsValid regular expression is provided as the parameter
+        public Spreadsheet(Regex isValid)
+        {
+
+        }
+
+        /// Creates a Spreadsheet that is a duplicate of the spreadsheet saved in source.
+        ///
+        /// See the AbstractSpreadsheet.Save method and Spreadsheet.xsd for the file format 
+        /// specification.  
+        ///
+        /// If there's a problem reading source, throws an IOException.
+        ///
+        /// Else if the contents of source are not consistent with the schema in Spreadsheet.xsd, 
+        /// throws a SpreadsheetReadException.  
+        ///
+        /// Else if the IsValid string contained in source is not a valid C# regular expression, throws
+        /// a SpreadsheetReadException.  (If the exception is not thrown, this regex is referred to
+        /// below as oldIsValid.)
+        ///
+        /// Else if there is a duplicate cell name in the source, throws a SpreadsheetReadException.
+        /// (Two cell names are duplicates if they are identical after being converted to upper case.)
+        ///
+        /// Else if there is an invalid cell name or an invalid formula in the source, throws a 
+        /// SpreadsheetReadException.  (Use oldIsValid in place of IsValid in the definition of 
+        /// cell name validity.)
+        ///
+        /// Else if there is an invalid cell name or an invalid formula in the source, throws a
+        /// SpreadsheetVersionException.  (Use newIsValid in place of IsValid in the definition of
+        /// cell name validity.)
+        ///
+        /// Else if there's a formula that causes a circular dependency, throws a SpreadsheetReadException. 
+        ///
+        /// Else, create a Spreadsheet that is a duplicate of the one encoded in source except that
+        /// the new Spreadsheet's IsValid regular expression should be newIsValid.
+        public Spreadsheet(TextReader source, Regex newIsValid)
+        {
+
         }
 
         /// <summary>
@@ -151,7 +205,7 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<string> SetCellContents(string name, double number)
+        protected override ISet<string> SetCellContents(string name, double number)
         {
             if (name == null || !Regex.IsMatch(name, cellNamePattern))
             {
@@ -183,7 +237,7 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<string> SetCellContents(string name, string text)
+        protected override ISet<string> SetCellContents(string name, string text)
         {
             if (text == null)
             {
@@ -228,7 +282,7 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<string> SetCellContents(string name, Formula formula)
+        protected override ISet<string> SetCellContents(string name, Formula formula)
         {
             HashSet<string> varSet = new HashSet<string>(GetNamesOfAllNonemptyCells());
             if (name == null || !Regex.IsMatch(name, cellNamePattern))
@@ -300,6 +354,30 @@ namespace SS
             }
             // Return set of cell names that depend on a cell's name
             return new HashSet<string>(set.GetDependees(name));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override void Save(TextWriter dest)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override object GetCellValue(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override ISet<string> SetContentsOfCell(string name, string content)
+        {
+            throw new NotImplementedException();
         }
     }
 }
