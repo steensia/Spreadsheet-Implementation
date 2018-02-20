@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,8 +11,8 @@ using Formulas;
 namespace SS
 {
     /// <summary>
-    /// An AbstractSpreadsheet object represents the state of a simple spreadsheet.  A 
-    /// spreadsheet consists of an infinite number of named cells.
+    /// A spreadsheet class implements an AbstractSpreadsheet. This class consists of an infinite 
+    /// number of named cells.
     /// 
     /// A string s is a valid cell name if and only if it consists of one or more letters, 
     /// followed by a non-zero digit, followed by zero or more digits.
@@ -53,16 +54,52 @@ namespace SS
     /// </summary>
     public class Spreadsheet : AbstractSpreadsheet
     {
-        const String namePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
+        // Fields
+        private Dictionary<string, Cell> cellMap;
+        private DependencyGraph set;
 
-        private Dictionary<string, object> cell;
+        // Constant(s)
+        const String cellNamePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
 
         /// <summary>
-        /// 
+        /// Private struct Cell that contains a name, content, and value to represent in a spreadsheet
+        /// </summary>
+        private struct Cell
+        {
+            public string name;
+            public object content;
+            public object value;
+
+            /// <summary>
+            /// Cell constructor to initialize its name, content, and value
+            /// </summary>
+            public Cell(string name, object content, object value)
+            {
+                this.name = name;
+                this.content = content;
+                this.value = value;
+            }
+
+            /// <summary>
+            /// New constructor to copy the contents of passed in Cell
+            /// </summary>
+            /// <param name="other"></param>
+            public Cell(Cell other)
+            {
+                this.name = other.name;
+                this.content = other.content;
+                this.value = other.value;
+            }
+        }
+
+        /// <summary>
+        /// Default spreedsheet constructor
+        /// A Spreadsheet contains a cell and each cell keeps tracks of its dependencies
         /// </summary>
         public Spreadsheet()
         {
-            this.cell = new Dictionary<string, object>();
+            this.cellMap = new Dictionary<string, Cell>();
+            this.set = new DependencyGraph();
         }
 
         /// <summary>
@@ -71,11 +108,13 @@ namespace SS
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
             HashSet<string> nonEmptyCells = new HashSet<string>();
-            foreach (var cellName in this.cell.Keys)
+
+            foreach (var name in cellMap)
             {
-                if (!cellName.Equals(""))
+                // Add string if not empty, otherwise ignore
+                if (!name.Value.content.Equals(""))
                 {
-                    nonEmptyCells.Add(cellName);
+                    nonEmptyCells.Add(name.Key);
                 }
             }
             return new HashSet<string>(nonEmptyCells);
@@ -89,28 +128,17 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
-            string empty = "";
-            if (name == null || !Regex.IsMatch(name, namePattern))
+            if (name == null || !Regex.IsMatch(name, cellNamePattern))
             {
                 throw new InvalidNameException();
             }
-            if (this.cell.ContainsKey(name))
+            // Return empty string if cell does not exist
+            if (!this.cellMap.ContainsKey(name))
             {
-                object content = this.cell[name];
-                if (content.GetType() == typeof(string))
-                {
-                    return (string) content;
-                }
-                else if (content.GetType() == typeof(double))
-                {
-                    return (double) content;
-                }
-                else if (content.GetType() == typeof(Formula))
-                {
-                    return (Formula) content;
-                }
+                return "";
             }
-            return empty;
+            // Otherwise return the content of the cell
+            return this.cellMap[name].content;
         }
 
         /// <summary>
@@ -125,19 +153,21 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, double number)
         {
-            if (name == null || !Regex.IsMatch(name, namePattern))
+            if (name == null || !Regex.IsMatch(name, cellNamePattern))
             {
                 throw new InvalidNameException();
             }
-            else if (this.cell.ContainsKey(name))
+            // Check if cell exists, then modify all links and set new content
+            if (this.cellMap.ContainsKey(name))
             {
-                this.cell[name] = number;
+                set.ReplaceDependents(name, new HashSet<string>());
+                this.cellMap[name] = new Cell(name, number, null);
             }
+            // Otherwise, create the cell associated with a number
             else
             {
-                this.cell.Add(name, number);
+                this.cellMap[name] = new Cell(name, number, null);
             }
-
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
@@ -159,17 +189,26 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            else if (name == null || !Regex.IsMatch(name, namePattern))
+            if (name == null || !Regex.IsMatch(name, cellNamePattern))
             {
                 throw new InvalidNameException();
             }
-            else if (this.cell.ContainsKey(name))
+            // Check if empty string, then remove existing link of the cell and make its contents empty
+            if (text.Equals(""))
             {
-                this.cell[name] = text;
+                set.ReplaceDependents(name, new HashSet<string>());
+                this.cellMap[name] = new Cell(name, text, null);
             }
+            // Check if cell exists, then modify all links and set new content
+            else if (this.cellMap.ContainsKey(name))
+            {
+                set.ReplaceDependents(name, new HashSet<string>());
+                this.cellMap[name] = new Cell(name, text, null);
+            }
+            // Otherwise, create the cell associated with a number
             else
             {
-                this.cell.Add(name, text);
+                this.cellMap[name] = new Cell(name, text, null);
             }
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
@@ -191,17 +230,43 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
-            if (name == null || !Regex.IsMatch(name, namePattern))
+            HashSet<string> varSet = new HashSet<string>(GetNamesOfAllNonemptyCells());
+            if (name == null || !Regex.IsMatch(name, cellNamePattern))
             {
                 throw new InvalidNameException();
             }
-            if (this.cell.ContainsKey(name))
+            // Check if cell already exists
+            if (this.cellMap.ContainsKey(name))
             {
-                this.cell[name] = formula;
+                // Preserve old cell and its links before modifying
+                Cell oldCell = this.cellMap[name];
+                HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
+                // Add links to each cell, replace old cell and check if circular dependency exists
+                try
+                {
+                    foreach (var form in formula.GetVariables())
+                    {
+                        set.AddDependency(name, form);
+                    }
+                    this.cellMap[name] = new Cell(name, formula, null);
+                    return new HashSet<string>(GetCellsToRecalculate(name));
+                }
+                // Revert to the previous cell and its links, then throw exception
+                catch (CircularException)
+                {
+                    set.ReplaceDependents(name, oldDentSet);
+                    this.cellMap[name] = new Cell(oldCell);
+                    throw new CircularException();
+                }
             }
+            // Otherwise, replace old cell and create links between cells
             else
             {
-                this.cell.Add(name, formula);
+                    foreach (var form in formula.GetVariables())
+                    {
+                        set.AddDependency(name, form);
+                    }
+                    this.cellMap[name] = new Cell(name, formula, null);
             }
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
@@ -225,88 +290,16 @@ namespace SS
         /// </summary>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            HashSet<string> dependencies = new HashSet<string>();
-            DependencyGraph
             if (name == null)
             {
                 throw new ArgumentNullException();
             }
-            else if (!Regex.IsMatch(name, namePattern))
+            else if (!Regex.IsMatch(name, cellNamePattern))
             {
                 throw new InvalidNameException();
             }
-
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Requires that names be non-null.  Also requires that if names contains s,
-        /// then s must be a valid non-null cell name.
-        /// 
-        /// If any of the named cells are involved in a circular dependency,
-        /// throws a CircularException.
-        /// 
-        /// Otherwise, returns an enumeration of the names of all cells whose values must
-        /// be recalculated, assuming that the contents of each cell named in names has changed.
-        /// The names are enumerated in the order in which the calculations should be done.  
-        /// 
-        /// For example, suppose that 
-        /// A1 contains 5
-        /// B1 contains 7
-        /// C1 contains the formula A1 + B1
-        /// D1 contains the formula A1 * C1
-        /// E1 contains 15
-        /// 
-        /// If A1 and B1 have changed, then A1, B1, and C1, and D1 must be recalculated,
-        /// and they must be recalculated in either the order A1,B1,C1,D1 or B1,A1,C1,D1.
-        /// The method will produce one of those enumerations.
-        /// 
-        /// PLEASE NOTE THAT THIS METHOD DEPENDS ON THE ABSTRACT GetDirectDependents.
-        /// IT WON'T WORK UNTIL GetDirectDependents IS IMPLEMENTED CORRECTLY.  YOU WILL
-        /// NOT NEED TO MODIFY THIS METHOD.
-        /// </summary>
-        protected new IEnumerable<String> GetCellsToRecalculate(ISet<String> names)
-        {
-            LinkedList<String> changed = new LinkedList<String>();
-            HashSet<String> visited = new HashSet<String>();
-            foreach (String name in names)
-            {
-                if (!visited.Contains(name))
-                {
-                    Visit(name, name, visited, changed);
-                }
-            }
-            return changed;
-        }
-
-        /// <summary>
-        /// A convenience method for invoking the other version of GetCellsToRecalculate
-        /// with a singleton set of names.  See the other version for details.
-        /// </summary>
-        protected new IEnumerable<String> GetCellsToRecalculate(String name)
-        {
-            return GetCellsToRecalculate(new HashSet<String>() { name });
-        }
-
-        /// <summary>
-        /// A helper for the GetCellsToRecalculate method.
-        /// </summary>
-        private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
-        {
-            visited.Add(name);
-            foreach (String n in GetDirectDependents(name))
-            {
-                if (n.Equals(start))
-                {
-                    throw new CircularException();
-                }
-                else if (!visited.Contains(n))
-                {
-                    Visit(start, n, visited, changed);
-                }
-            }
-            changed.AddFirst(name);
+            // Return set of cell names that depend on a cell's name
+            return new HashSet<string>(set.GetDependees(name));
         }
     }
 }
-
