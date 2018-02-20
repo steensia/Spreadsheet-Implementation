@@ -226,6 +226,7 @@ namespace SS
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
             HashSet<string> dependencies = new HashSet<string>();
+            DependencyGraph
             if (name == null)
             {
                 throw new ArgumentNullException();
