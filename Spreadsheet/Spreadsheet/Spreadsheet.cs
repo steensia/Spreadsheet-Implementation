@@ -206,7 +206,7 @@ namespace SS
         /// True if this spreadsheet has been modified since it was created or saved
         /// (whichever happened most recently); false otherwise.
         /// </summary>
-        public override bool Changed { get => this.Changed; protected set => this.Changed = false; }
+        public override bool Changed { get => true; protected set => this.Changed = false; }
 
         // ADDED FOR PS6
         /// <summary>
@@ -231,22 +231,23 @@ namespace SS
         public override void Save(TextWriter dest)
         {
             //using (XmlWriter writer = XmlWriter.Create("../../Spreadsheet.xml"))
-            //{
-            XmlWriter writer = XmlWriter.Create("../../Spreadsheet2.xml");
-            writer.WriteStartDocument();
-            writer.WriteStartElement("spreadsheet");
-
-            foreach (var cell in this.cellMap.Keys)
+            using (XmlWriter writer = XmlWriter.Create(dest.ToString()))
             {
-                writer.WriteStartElement("cell name");
-                writer.WriteAttributeString("=", this.cellMap[cell].name);
-                writer.WriteAttributeString("contents=", this.cellMap[cell].content.ToString());
-                writer.WriteEndElement();
-            }
 
-            writer.WriteEndElement();
-            writer.WriteEndDocument();
-            //}
+                writer.WriteStartDocument();
+                writer.WriteStartElement("spreadsheet");
+
+                foreach (var cell in this.cellMap.Keys)
+                {
+                    writer.WriteStartElement("cell");
+                    writer.WriteAttributeString("name", this.cellMap[cell].name);
+                    writer.WriteAttributeString("contents=", this.cellMap[cell].content.ToString());
+                    writer.WriteEndElement();
+                }
+
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+            }
         }
 
         // ADDED FOR PS6
@@ -320,7 +321,7 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            if (name == null || Regex.IsMatch(name, isValid.ToString()))
+            if (name == null || !Regex.IsMatch(name, isValid.ToString()))
             {
                 throw new InvalidNameException();
             }
@@ -339,14 +340,10 @@ namespace SS
                 }
             }
             // Determine if the content is a valid formula
-            else if (name[0] == '=')
+            else if (content[0].Equals('='))
             {
-                Formula f = new Formula(content.Substring(1), s => s.ToUpper(), s => Regex.IsMatch(content, isValid.ToString()));
-                if (!Regex.IsMatch(content, isValid.ToString()))
-                {
-                    throw new Formulas.FormulaFormatException("The remainder of the content cannot be parsed");
-                }
-                else if (Regex.IsMatch(content, isValid.ToString()))
+                Formula f = new Formula(content.Substring(1), s => s.ToUpper(), s => Regex.IsMatch(s, isValid.ToString()));
+                if (Regex.IsMatch(content.Substring(1), isValid.ToString()))
                 {
                     if (this.cellMap.ContainsKey(name))
                     {
