@@ -156,6 +156,49 @@ namespace SS
             this.cellMap = new Dictionary<string, Cell>();
             this.set = new DependencyGraph();
             this.isValid = newIsValid;
+
+            // Problem with reading source
+            if (source == null)
+            {
+                throw new IOException();
+            }
+            // Contents of source are not consistent with schema
+            else if (source == null)
+            {
+                throw new SpreadsheetReadException("Contents of the source are not consistent with the schema in Spreadsheet.xsd");
+            }
+            // IsValid string is not valid C# regex
+            else if (this.isValid == null)
+            {
+                throw new SpreadsheetReadException("IsValid string contained in source is not a valid C# regular expression");
+            }
+            // Duplicate cell name after upper case
+            else if (true.Equals("s"))
+            {
+                throw new SpreadsheetReadException("Duplicate cell names are not allowed in the source");
+            }
+            // Invalid cell name or an invalid formula in source
+            else if (true.Equals("x"))
+            {
+                throw new SpreadsheetVersionException("Source cannot contain invalid cell name or an invalid formula");
+            }
+            // Formula causes circular dependency, try catch
+            else if (true.Equals("z"))
+            {
+                try
+                {
+
+                }
+                catch (CircularException)
+                {
+                    throw new SpreadsheetReadException("Formula must not cause a circular dependency");
+                }
+            }
+            // Copy contents in source and use newIsValid as regex
+            else
+            {
+                Spreadsheet newSS = new Spreadsheet(newIsValid);
+            }
         }
 
         // ADDED FOR PS6
@@ -164,7 +207,7 @@ namespace SS
         /// (whichever happened most recently); false otherwise.
         /// </summary>
         public override bool Changed { get => this.Changed; protected set => this.Changed = false; }
-        
+
         // ADDED FOR PS6
         /// <summary>
         /// Writes the contents of this spreadsheet to dest using an XML format.
@@ -187,22 +230,23 @@ namespace SS
         /// </summary>
         public override void Save(TextWriter dest)
         {
-            using (XmlWriter writer = XmlWriter.Create("../../Spreadsheet.xml"))
+            //using (XmlWriter writer = XmlWriter.Create("../../Spreadsheet.xml"))
+            //{
+            XmlWriter writer = XmlWriter.Create("../../Spreadsheet2.xml");
+            writer.WriteStartDocument();
+            writer.WriteStartElement("spreadsheet");
+
+            foreach (var cell in this.cellMap.Keys)
             {
-                writer.WriteStartDocument();
-                writer.WriteStartElement("spreadsheet");
-
-                foreach (var cell in this.cellMap.Keys)
-                {
-                    writer.WriteStartElement("cell name");
-                    writer.WriteAttributeString("=", this.cellMap[cell].name);
-                    writer.WriteAttributeString("contents=", this.cellMap[cell].content.ToString());
-                    writer.WriteEndElement();
-                }
-
+                writer.WriteStartElement("cell name");
+                writer.WriteAttributeString("=", this.cellMap[cell].name);
+                writer.WriteAttributeString("contents=", this.cellMap[cell].content.ToString());
                 writer.WriteEndElement();
-                writer.WriteEndDocument();
             }
+
+            writer.WriteEndElement();
+            writer.WriteEndDocument();
+            //}
         }
 
         // ADDED FOR PS6
@@ -279,7 +323,7 @@ namespace SS
             if (name == null || Regex.IsMatch(name, isValid.ToString()))
             {
                 throw new InvalidNameException();
-            }       
+            }
             // Determine if the content is a double, then add/modify the cell
             if (Double.TryParse(content, out double result))
             {
@@ -295,7 +339,7 @@ namespace SS
                 }
             }
             // Determine if the content is a valid formula
-            if (name[0] == '=')
+            else if (name[0] == '=')
             {
                 Formula f = new Formula(content.Substring(1), s => s.ToUpper(), s => Regex.IsMatch(content, isValid.ToString()));
                 if (!Regex.IsMatch(content, isValid.ToString()))
@@ -316,7 +360,7 @@ namespace SS
                             {
                                 set.AddDependency(name, form);
                             }
-                            this.cellMap[name] = new Cell(name, f, f.Evaluate( s => Lookup1(name)));
+                            this.cellMap[name] = new Cell(name, f, f.Evaluate(s => Lookup1(name)));
                             return new HashSet<string>(GetCellsToRecalculate(name));
                         }
                         // Revert to the previous cell and its links, then throw exception
@@ -326,7 +370,7 @@ namespace SS
                             this.cellMap[name] = new Cell(oldCell);
                             throw new CircularException();
                         }
-                    }    
+                    }
                     // Create a new cell and its dependencies
                     else
                     {
@@ -337,28 +381,29 @@ namespace SS
                         this.cellMap[name] = new Cell(name, f, f.Evaluate(s => Lookup1(name)));
                     }
                 }
-                // Determined that content is a string
-                else
+
+            }
+            // Determined that content is a string
+            else
+            {
+                string value = content;
+                if (this.cellMap.ContainsKey(name))
                 {
-                    string value = content;
-                    if (this.cellMap.ContainsKey(name))
+                    // If string is empty, removes links with link and set cell as empty
+                    if (content.Equals(""))
                     {
-                        // If string is empty, removes links with link and set cell as empty
-                        if (content.Equals(""))
-                        {
-                            set.ReplaceDependents(name, new HashSet<string>());
-                            this.cellMap[name] = new Cell(name, content, value);
-                        }
-                        else
-                        {
-                            set.ReplaceDependents(name, new HashSet<string>());
-                            this.cellMap[name] = new Cell(name, content, value);
-                        }
+                        set.ReplaceDependents(name, new HashSet<string>());
+                        this.cellMap[name] = new Cell(name, content, value);
                     }
                     else
                     {
+                        set.ReplaceDependents(name, new HashSet<string>());
                         this.cellMap[name] = new Cell(name, content, value);
                     }
+                }
+                else
+                {
+                    this.cellMap[name] = new Cell(name, content, value);
                 }
             }
             return new HashSet<string>(GetCellsToRecalculate(name));
@@ -573,7 +618,7 @@ namespace SS
         {
             if (this.cellMap.TryGetValue(cellName, out Cell temp))
             {
-                return (double) temp.value;
+                return (double)temp.value;
             }
             else
             {
