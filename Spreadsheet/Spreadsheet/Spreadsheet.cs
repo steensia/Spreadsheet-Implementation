@@ -154,8 +154,6 @@ namespace SS
         /// the new Spreadsheet's IsValid regular expression should be newIsValid.
         public Spreadsheet(TextReader source, Regex newIsValid)
         {
-            //Regex temp = new Regex(this.isValid.ToString());
-
             // Create HashSet to check for duplicates
             //HashSet<string> temp = new HashSet<string>();
 
@@ -177,7 +175,7 @@ namespace SS
                     {
                         switch (reader.Name)
                         {  
-                            case "IsValid":
+                            case "Spreadsheet":
                                 // Check if the C# regex is valid and refer to as oldIsInvalid
                                 try
                                 {
@@ -190,7 +188,7 @@ namespace SS
                                 }
                                 break;
 
-                            case "name":
+                            case "Cell":
                                 // Invalid cell name
                                 if (!this.isValid.IsMatch(reader["name"]))
                                 {
@@ -202,26 +200,21 @@ namespace SS
                                 {
                                     throw new SpreadsheetReadException("Source cannot contain invalid cell name or an invalid formula");
                                 }
-                                break;
-                            case "content":
+                                if (reader["content"][0].Equals("="))
                                 {
-                                    if (reader["content"][0].Equals("="))
+                                    try
                                     {
-                                        try
-                                        {
-                                            Formula f = new Formula(reader["content"].Substring(1), s => s.ToUpper(), s => this.isValid.IsMatch(s.ToUpper()));
-                                        }
-                                        catch (CircularException)
-                                        {
-                                            throw new SpreadsheetReadException("The formula contains circular dependencies");
-                                        }
-                                        catch (Exception)
-                                        {
-                                            throw new SpreadsheetReadException("This is an invalid formula");
-                                        }
-                                        SetContentsOfCell(reader["name"], reader["content"]);
+                                        Formula f = new Formula(reader["content"].Substring(1), s => s.ToUpper(), s => this.isValid.IsMatch(s.ToUpper()));
                                     }
-
+                                    catch (CircularException)
+                                    {
+                                        throw new SpreadsheetReadException("The formula contains circular dependencies");
+                                    }
+                                    catch (Exception)
+                                    {
+                                        throw new SpreadsheetReadException("This is an invalid formula");
+                                    }
+                                    SetContentsOfCell(reader["name"], reader["content"]);
                                 }
                                 break;
                         }
@@ -230,13 +223,13 @@ namespace SS
             }
             Spreadsheet newSheet = new Spreadsheet(newIsValid);
         }
-          
+
         // ADDED FOR PS6
         /// <summary>
         /// True if this spreadsheet has been modified since it was created or saved
         /// (whichever happened most recently); false otherwise.
         /// </summary>
-        public override bool Changed { get => this.Changed; protected set => this.Changed = false; }
+        public override bool Changed { get; protected set; }
 
         // ADDED FOR PS6
         /// <summary>
@@ -272,13 +265,22 @@ namespace SS
                 {
                     writer.WriteStartElement("cell");
                     writer.WriteAttributeString("name", this.cellMap[cell].name);
-                    writer.WriteAttributeString("contents", this.cellMap[cell].content.ToString());
+                    if (this.cellMap[cell].content.GetType() == typeof(Formula))
+                    {
+                        writer.WriteAttributeString("contents", "=" + this.cellMap[cell].content.ToString());
+
+                    }
+                    else
+                    {
+                        writer.WriteAttributeString("contents", this.cellMap[cell].content.ToString());
+                    }
                     writer.WriteFullEndElement();
                 }
 
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
             }
+            Changed = false;
         }
 
         // ADDED FOR PS6
@@ -435,6 +437,7 @@ namespace SS
                 //    }
                 //
             }
+            Changed = true;
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
 

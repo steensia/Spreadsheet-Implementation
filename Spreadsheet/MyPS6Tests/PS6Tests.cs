@@ -255,7 +255,7 @@ namespace MyPS6Tests
         {
             Spreadsheet s = new Spreadsheet();
             HashSet<string> t = new HashSet<string>();
-            for (int i = 0; i < 1_000_000; i++)
+            for (int i = 0; i < 10_000; i++)
             {
                 s.SetContentsOfCell("A1" + i, "B2" + i);
                 t.Add("A1" + i);
@@ -337,6 +337,19 @@ namespace MyPS6Tests
             s.Write("../../spreadsheet1.xml");
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A1", "ok");
+            sheet.SetContentsOfCell("B2", "=7");
+            sheet.Save(s);
+        }
+
+        /// <summary>
+        /// Create XML file with invalid regex
+        /// </summary>
+        [TestMethod]
+        public void SaveTest2()
+        {
+            StringWriter s = new StringWriter();
+            s.Write("../../badText.xml");
+            Spreadsheet sheet = new Spreadsheet(new Regex(@"a3p"));
             sheet.Save(s);
         }
 
@@ -344,10 +357,21 @@ namespace MyPS6Tests
         /// Check to see if second constructor accepts new C# regex
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(RegexMatchTimeoutException))]
         public void SecondConstructorTest()
         {
-            Spreadsheet sheet = new Spreadsheet(new Regex(@"^.$"));
+            Spreadsheet sheet = new Spreadsheet(new Regex(@"^[1-9]$"));
+            sheet.SetContentsOfCell("9", "4");
+            Assert.AreEqual(4.0, sheet.GetCellContents("9"));
+        }
+
+        /// <summary>
+        /// Check to see if third constructor works with SampleSpreadsheet.xml
+        /// </summary>
+        [TestMethod]
+        public void ThirdConstructorTest()
+        {
+            StringReader s = new StringReader("C://Users//steen//source//repos//spreadsheet//Spreadsheet//Spreadsheet//SampleSavedSpreadsheet.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
         /// <summary>
@@ -355,9 +379,9 @@ namespace MyPS6Tests
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(IOException))]
-        public void ThirdConstructorTest()
+        public void ThirdConstructorTest2()
         {
-            StringReader s = new StringReader("../../spreadsheet1.xml");
+            StringReader s = new StringReader("../../null.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
@@ -367,9 +391,9 @@ namespace MyPS6Tests
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadException))]
-        public void ThirdConstructorTest2()
+        public void ThirdConstructorTest3()
         {
-            StringReader s = new StringReader("../../spreadsheet1.xml");
+            StringReader s = new StringReader("../../badRegex.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
@@ -379,10 +403,10 @@ namespace MyPS6Tests
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadException))]
-        public void ThirdConstructorTest3()
+        public void ThirdConstructorTest4()
         {
-            StringReader s = new StringReader("../../spreadsheet1.xml");
-            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
         /// <summary>
@@ -391,10 +415,10 @@ namespace MyPS6Tests
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadException))]
-        public void ThirdConstructorTest4()
+        public void ThirdConstructorTest5()
         {
-            StringReader s = new StringReader("../../spreadsheet1.xml");
-            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
         /// <summary>
@@ -403,10 +427,10 @@ namespace MyPS6Tests
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadException))]
-        public void ThirdConstructorTest5()
+        public void ThirdConstructorTest6()
         {
-            StringReader s = new StringReader("../../spreadsheet1.xml");
-            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
         /// <summary>
@@ -415,10 +439,10 @@ namespace MyPS6Tests
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetVersionException))]
-        public void ThirdConstructorTest6()
+        public void ThirdConstructorTest7()
         {
-            StringReader s = new StringReader("../../spreadsheet1.xml");
-            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
         /// <summary>
@@ -427,10 +451,10 @@ namespace MyPS6Tests
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadException))]
-        public void ThirdConstructorTest7()
+        public void ThirdConstructorTest8()
         {
-            StringReader s = new StringReader("../../spreadsheet1.xml");
-            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
         /// <summary>
@@ -441,7 +465,7 @@ namespace MyPS6Tests
         public void ChangedTest()
         {
             Spreadsheet sheet = new Spreadsheet();
-            Assert.IsTrue(sheet.Changed ==  false);
+            Assert.IsTrue(sheet.Changed == false);
         }
 
         /// <summary>
@@ -450,6 +474,23 @@ namespace MyPS6Tests
         /// </summary>
         [TestMethod]
         public void ChangedTest2()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("G7", "4");
+            sheet.SetContentsOfCell("A1", "=5");
+            sheet.SetContentsOfCell("B4", "=G7+A1");
+            StringWriter temp = new StringWriter();
+            temp.Write("../../spreadsheet2.xml");
+            sheet.Save(temp);
+            Assert.IsTrue(sheet.Changed == false);
+        }
+
+        /// <summary>
+        /// Check to see if Changed property returns false when no modification
+        /// is made after creating a spreadsheet.
+        /// </summary>
+        [TestMethod]
+        public void ChangedTest3()
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("G7", "7");
