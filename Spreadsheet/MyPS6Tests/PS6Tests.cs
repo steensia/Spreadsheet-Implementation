@@ -77,7 +77,7 @@ namespace MyPS6Tests
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A1", "parameter");
-            sheet.GetCellContents(null);
+            sheet.GetCellContents("05");
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace MyPS6Tests
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A1", "parameter");
-            sheet.GetCellContents(null);
+            Assert.IsTrue("".Equals(sheet.GetCellContents("X2")));
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace MyPS6Tests
         public void SetContentsOfCellTest5()
         {
             Spreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("A1", "=5");
+            sheet.SetContentsOfCell("A1", "=A2");
             sheet.SetContentsOfCell("A2", "=A1+5");
         }
 
@@ -180,6 +180,43 @@ namespace MyPS6Tests
         }
 
         /// <summary>
+        /// Check if SetContentsOfCell replaces existing cell with formula
+        /// </summary>
+        [TestMethod]
+        public void SetContentsOfCellTest7()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("X1", "2");
+            sheet.SetContentsOfCell("Y1", "3");
+            sheet.SetContentsOfCell("A1", "=5");
+            sheet.SetContentsOfCell("A1", "=2+X1+Y1");
+            Assert.AreEqual(7.0, sheet.GetCellValue("A1"));
+        }
+
+        /// <summary>
+        /// Check if SetContentsOfCell sets cell empty after passing in empty string
+        /// </summary>
+        [TestMethod]
+        public void SetContentsOfCellTest8()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A2", "");
+            Assert.IsTrue("".Equals(sheet.GetCellValue("A2")));
+        }
+
+        /// <summary>
+        /// Check if SetContentsOfCell overwrites a cell that had a string, with a string
+        /// </summary>
+        [TestMethod]
+        public void SetContentsOfCellTest9()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A2", "bee");
+            sheet.SetContentsOfCell("A2", "cat");
+            Assert.IsTrue("cat".Equals(sheet.GetCellValue("A2")));
+        }
+
+        /// <summary>
         /// Check to see if third constructor throws error
         /// </summary>
         [TestMethod]
@@ -194,6 +231,130 @@ namespace MyPS6Tests
             StringReader s = new StringReader("sss");
 
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+        }
+
+        /// <summary>
+        /// Check if all valid cells are returned
+        /// </summary>
+        [TestMethod]
+        public void GetNamesOfAllNonemptyCells()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("C2", "3");
+            s.SetContentsOfCell("C2", "");
+            HashSet<string> cellNames = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(cellNames.SetEquals(new HashSet<string>()));
+        }
+
+        /// <summary>
+        /// Check if all valid cells are returned
+        /// </summary>
+        [TestMethod]
+        public void GetNamesOfAllNonemptyCells1()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A1", "5");
+            s.SetContentsOfCell("B2", "x2");
+            s.SetContentsOfCell("C3", "=D7");
+            s.SetContentsOfCell("D4", "=F9");
+            HashSet<string> cellNames = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(cellNames.SetEquals(new HashSet<string> { "A1", "B2", "C3", "D4" }));
+        }
+
+        /// <summary>
+        /// Check if all valid cells are returned
+        /// </summary>
+        [TestMethod]
+        public void GetNamesOfAllNonemptyCells2()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A1", "=B3");
+            s.SetContentsOfCell("B2", "=C5");
+            s.SetContentsOfCell("C3", "=D7");
+            s.SetContentsOfCell("D4", "=F9");
+            s.SetContentsOfCell("D4", "");
+            HashSet<string> cellNames = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(cellNames.SetEquals(new HashSet<string> { "A1", "B2", "C3" }));
+        }
+
+        /// <summary>
+        /// Check if all valid cells are returned, stress test
+        /// </summary>
+        [TestMethod]
+        public void GetNamesOfAllNonemptyCells3()
+        {
+            Spreadsheet s = new Spreadsheet();
+            HashSet<string> t = new HashSet<string>();
+            for (int i = 0; i < 1_000_000; i++)
+            {
+                s.SetContentsOfCell("A1" + i, "B2" + i);
+                t.Add("A1" + i);
+            }
+            for (int i = 777; i < 777_777; i++)
+            {
+                t.Remove("A1" + i);
+                s.SetContentsOfCell("A1" + i, "");
+            }
+            HashSet<string> cellNames = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(cellNames.SetEquals(t));
+        }
+
+        /// <summary>
+        /// Check if GetCellContents returns the correct string
+        /// </summary>
+        [TestMethod]
+        public void GetCellContents1()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "xD");
+            Assert.AreEqual("xD", sheet.GetCellContents("A1"));
+        }
+
+        /// <summary>
+        /// Check if GetCellContents returns the correct double
+        /// </summary>
+        [TestMethod]
+        public void GetCellContents2()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "7.0");
+            Assert.AreEqual(7.0, sheet.GetCellContents("A1"));
+        }
+
+        /// <summary>
+        /// Check if GetCellContents returns the correct formula with default constructor
+        /// </summary>
+        [TestMethod]
+        public void GetCellContents3()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            Formula defConstruct = new Formula();
+            sheet.SetContentsOfCell("A1", defConstruct.ToString());
+            Assert.AreEqual(0.0, sheet.GetCellContents("A1"));
+        }
+
+        /// <summary>
+        /// Check if GetCellContents returns the correct formula with old constructor
+        /// </summary>
+        [TestMethod]
+        public void GetCellContents4()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            Formula defConstruct = new Formula("X + Y");
+            sheet.SetContentsOfCell("A1", defConstruct.ToString());
+            Assert.AreEqual("X+Y", sheet.GetCellContents("A1"));
+        }
+
+        /// <summary>
+        /// Check GetCellContents on no existing cell
+        /// </summary>
+        [TestMethod]
+        public void GetCellContents5()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            Formula defConstruct = new Formula("X + Y");
+            sheet.SetContentsOfCell("A1", defConstruct.ToString());
+            Assert.AreEqual("", sheet.GetCellContents("B1"));
         }
     }
 }
