@@ -217,17 +217,6 @@ namespace MyPS6Tests
         }
 
         /// <summary>
-        /// Check to see if third constructor throws error
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(IOException))]
-        public void ThirdConstructorTest()
-        {
-            StringReader s = new StringReader("../../spreadsheet1.xml");
-            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
-        }
-
-        /// <summary>
         /// Check if all valid cells are returned
         /// </summary>
         [TestMethod]
@@ -349,6 +338,122 @@ namespace MyPS6Tests
             Formula defConstruct = new Formula("X + Y");
             sheet.SetContentsOfCell("A1", defConstruct.ToString());
             Assert.AreEqual("", sheet.GetCellContents("B1"));
+        }
+
+        /// <summary>
+        /// Check to see if second constructor accepts new C# regex
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(RegexMatchTimeoutException))]
+        public void SeconddConstructorTest()
+        {
+            Spreadsheet sheet = new Spreadsheet(new Regex(@"^.$"));
+        }
+
+        /// <summary>
+        /// Check to see if third constructor throws IOException
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(IOException))]
+        public void ThirdConstructorTest()
+        {
+            StringReader s = new StringReader("../../spreadsheet1.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+        }
+
+        /// <summary>
+        /// Check to see if third constructor throws SpreadsheetReadException
+        /// when the contents of the source are inconsistent with schema
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadException))]
+        public void ThirdConstructorTest2()
+        {
+            StringReader s = new StringReader("../../spreadsheet1.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+        }
+
+        /// <summary>
+        /// Check to see if third constructor throws SpreadsheetReadException
+        /// when the IsValid string contains an invalid C# Regex
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadException))]
+        public void ThirdConstructorTest3()
+        {
+            StringReader s = new StringReader("../../spreadsheet1.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+        }
+
+        /// <summary>
+        /// Check to see if third constructor throws SpreadsheetReadException
+        /// when there is a duplicate cell name
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadException))]
+        public void ThirdConstructorTest4()
+        {
+            StringReader s = new StringReader("../../spreadsheet1.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+        }
+
+        /// <summary>
+        /// Check to see if third constructor throws SpreadsheetReadException
+        /// when there is an invalid cell name or formula (oldIsValid)
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadException))]
+        public void ThirdConstructorTest5()
+        {
+            StringReader s = new StringReader("../../spreadsheet1.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+        }
+
+        /// <summary>
+        /// Check to see if third constructor throws SpreadsheetVersionException
+        /// when there is an invalid cell name or formula (newIsValid)
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetVersionException))]
+        public void ThirdConstructorTest6()
+        {
+            StringReader s = new StringReader("../../spreadsheet1.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+        }
+
+        /// <summary>
+        /// Check to see if third constructor throws SpreadsheetReadException
+        /// when there is a circular dependency
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadException))]
+        public void ThirdConstructorTest7()
+        {
+            StringReader s = new StringReader("../../spreadsheet1.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+        }
+
+        /// <summary>
+        /// Check to see if Changed property returns false when no modification
+        /// is made after creating a spreadsheet.
+        /// </summary>
+        [TestMethod]
+        public void ChangedTest()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            Assert.IsTrue(sheet.Changed ==  false);
+        }
+
+        /// <summary>
+        /// Check to see if Changed property returns false when no modification
+        /// is made after creating a spreadsheet.
+        /// </summary>
+        [TestMethod]
+        public void ChangedTest2()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("G7", "7");
+            Assert.IsTrue(sheet.Changed == true);
         }
     }
 }
