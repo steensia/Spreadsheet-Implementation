@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Schema;
 using Dependencies;
 using Formulas;
 
@@ -127,9 +128,9 @@ namespace SS
         /// See the AbstractSpreadsheet.Save method and Spreadsheet.xsd for the file format 
         /// specification.  
         ///
-        /// If there's a problem reading source, throws an IOException.
+        /// *If there's a problem reading source, throws an IOException.
         ///
-        /// Else if the contents of source are not consistent with the schema in Spreadsheet.xsd, 
+        /// *Else if the contents of source are not consistent with the schema in Spreadsheet.xsd, 
         /// throws a SpreadsheetReadException.  
         ///
         /// Else if the IsValid string contained in source is not a valid C# regular expression, throws
@@ -147,60 +148,87 @@ namespace SS
         /// SpreadsheetVersionException.  (Use newIsValid in place of IsValid in the definition of
         /// cell name validity.)
         ///
-        /// Else if there's a formula that causes a circular dependency, throws a SpreadsheetReadException. 
+        /// *Else if there's a formula that causes a circular dependency, throws a SpreadsheetReadException. 
         ///
-        /// Else, create a Spreadsheet that is a duplicate of the one encoded in source except that
+        /// *Else, create a Spreadsheet that is a duplicate of the one encoded in source except that
         /// the new Spreadsheet's IsValid regular expression should be newIsValid.
         public Spreadsheet(TextReader source, Regex newIsValid)
         {
             this.cellMap = new Dictionary<string, Cell>();
             this.set = new DependencyGraph();
-            this.isValid = newIsValid;
 
-            // Problem with reading source
-            if (source == null)
-            {
-                throw new IOException();
-            }
-            // Contents of source are not consistent with schema
-            else if (source == null)
-            {
-                throw new SpreadsheetReadException("Contents of the source are not consistent with the schema in Spreadsheet.xsd");
-            }
-            // IsValid string is not valid C# regex
-            else if (this.isValid == null)
-            {
-                throw new SpreadsheetReadException("IsValid string contained in source is not a valid C# regular expression");
-            }
-            // Duplicate cell name after upper case
-            else if (true.Equals("s"))
-            {
-                throw new SpreadsheetReadException("Duplicate cell names are not allowed in the source");
-            }
-            // Invalid cell name or an invalid formula in source
-            else if (true.Equals("x"))
-            {
-                throw new SpreadsheetVersionException("Source cannot contain invalid cell name or an invalid formula");
-            }
-            // Formula causes circular dependency, try catch
-            else if (true.Equals("z"))
-            {
-                try
-                {
+            //Regex temp = new Regex(this.isValid.ToString());
 
-                }
-                catch (CircularException)
-                {
-                    throw new SpreadsheetReadException("Formula must not cause a circular dependency");
-                }
-            }
-            // Copy contents in source and use newIsValid as regex
-            else
+            // Create HashSet to check for duplicates
+            //HashSet<string> temp = new HashSet<string>();
+
+            XmlSchemaSet sc = new XmlSchemaSet();
+
+            sc.Add(null, "Spreadsheet.xsd");
+
+            // Configure validation.
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.ValidationType = ValidationType.Schema;
+            settings.Schemas = sc;
+            settings.ValidationEventHandler += ValidationCallback;
+
+            using (XmlReader reader = XmlReader.Create("../../spreadsheet1.xml", settings))
             {
-                Spreadsheet newSS = new Spreadsheet(newIsValid);
+                while (reader.Read())
+                {
+                    if (reader.IsStartElement())
+                    {
+                        switch (reader.Name)
+                        {  
+                            case "IsValid":
+                                // Check if the C# regex is valid and refer to as oldIsInvalid
+                                try
+                                {
+                                    Regex oldIsInvalid = new Regex(reader["IsValid"]);
+                                    this.isValid = oldIsInvalid;
+                                }
+                                catch (Exception)
+                                {
+                                    //this.isValid = temp;
+                                    throw new SpreadsheetReadException("IsValid in source is not a valid C# regular expression");
+                                }
+                                break;
+
+                            case "name":
+                                // Invalid cell name
+                                if (!this.isValid.IsMatch(reader["name"]))
+                                {
+                                    throw new SpreadsheetVersionException("Source cannot contain invalid cell name or an invalid formula");
+
+                                }
+                                // Check if duplicate names exist
+                                if (this.cellMap.ContainsKey(reader["name"].ToUpper()))
+                                {
+                                    throw new SpreadsheetReadException("Source cannot contain invalid cell name or an invalid formula");
+                                }
+                                break;
+                            case "content":
+                                {
+                                    if (reader["content"][0].Equals("="))
+                                    {
+                                        try
+                                        {
+                                            Formula f = new Formula(reader["content"].Substring(1), s => s.ToUpper(), s => this.isValid.IsMatch(s.ToUpper()));
+                                        }
+                                        catch (Exception)
+                                        {
+                                            throw new SpreadsheetReadException("This is an invalid formula");
+                                        }
+                                    }
+                                    SetContentsOfCell(reader["name"], reader["content"]);
+                                }
+                                break;
+                        }
+                    }
+                }
             }
         }
-
+          
         // ADDED FOR PS6
         /// <summary>
         /// True if this spreadsheet has been modified since it was created or saved
@@ -236,12 +264,13 @@ namespace SS
 
                 writer.WriteStartDocument();
                 writer.WriteStartElement("spreadsheet");
+                writer.WriteAttributeString("IsValid", isValid.ToString());
 
                 foreach (var cell in this.cellMap.Keys)
                 {
                     writer.WriteStartElement("cell");
                     writer.WriteAttributeString("name", this.cellMap[cell].name);
-                    writer.WriteAttributeString("contents=", this.cellMap[cell].content.ToString());
+                    writer.WriteAttributeString("contents", this.cellMap[cell].content.ToString());
                     writer.WriteEndElement();
                 }
 
@@ -342,34 +371,41 @@ namespace SS
             // Determine if the content is a valid formula
             else if (content[0].Equals('='))
             {
-                Formula f = new Formula(content.Substring(1), s => s.ToUpper(), s => Regex.IsMatch(s, isValid.ToString()));
-                if (Regex.IsMatch(content.Substring(1), isValid.ToString()))
+                Formula f = new Formula(content.Substring(1), s => s.ToUpper(), s => this.isValid.IsMatch(s.ToUpper()));
+                if (this.cellMap.ContainsKey(name))
                 {
-                    if (this.cellMap.ContainsKey(name))
+                    // Preserve old cell and its links before modifying
+                    Cell oldCell = this.cellMap[name];
+                    HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
+                    // Add links to each cell, replace old cell and check if circular dependency exists
+                    try
                     {
-                        // Preserve old cell and its links before modifying
-                        Cell oldCell = this.cellMap[name];
-                        HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
-                        // Add links to each cell, replace old cell and check if circular dependency exists
-                        try
+                        foreach (var form in f.GetVariables())
                         {
-                            foreach (var form in f.GetVariables())
-                            {
-                                set.AddDependency(name, form);
-                            }
-                            this.cellMap[name] = new Cell(name, f, f.Evaluate(s => Lookup1(name)));
-                            return new HashSet<string>(GetCellsToRecalculate(name));
+                            set.AddDependency(name, form);
                         }
-                        // Revert to the previous cell and its links, then throw exception
-                        catch (CircularException)
+                        this.cellMap[name] = new Cell(name, f, f.Evaluate(s => Lookup1(name)));
+                        return new HashSet<string>(GetCellsToRecalculate(name));
+                    }
+                    // Revert to the previous cell and its links, then throw exception
+                    catch (Exception e)
+                    {
+                        if (e.GetType() == typeof(CircularException))
                         {
                             set.ReplaceDependents(name, oldDentSet);
                             this.cellMap[name] = new Cell(oldCell);
                             throw new CircularException();
                         }
+                        else if (e.GetType() == typeof(FormulaEvaluationException))
+                        {
+                            this.cellMap[name] = new Cell(name, content, new FormulaError());
+                        }
                     }
-                    // Create a new cell and its dependencies
-                    else
+                }
+                // Create a new cell and its dependencies
+                else
+                {
+                    try
                     {
                         foreach (var form in f.GetVariables())
                         {
@@ -377,8 +413,11 @@ namespace SS
                         }
                         this.cellMap[name] = new Cell(name, f, f.Evaluate(s => Lookup1(name)));
                     }
+                    catch (FormulaEvaluationException)
+                    {
+                        this.cellMap[name] = new Cell(name, f, new FormulaError());
+                    }
                 }
-
             }
             // Determined that content is a string
             else
@@ -621,6 +660,12 @@ namespace SS
             {
                 throw new UndefinedVariableException(cellName);
             }
+        }
+
+        // Display any validation errors.
+        private static void ValidationCallback(object sender, ValidationEventArgs e)
+        {
+            throw new SpreadsheetReadException("Source is not consistent with schema");
         }
     }
 }
