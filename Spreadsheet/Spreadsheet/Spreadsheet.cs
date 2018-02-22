@@ -169,7 +169,7 @@ namespace SS
             settings.Schemas = sc;
             settings.ValidationEventHandler += ValidationCallback;
 
-            using (XmlReader reader = XmlReader.Create("../../spreadsheet1.xml", settings))
+            using (XmlReader reader = XmlReader.Create(source, settings))
             {
                 while (reader.Read())
                 {

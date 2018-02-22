@@ -223,13 +223,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(IOException))]
         public void ThirdConstructorTest()
         {
-            //StringWriter s = new StringWriter();
-            //s.Write("../../spreadsheet1.xml");
-            //Spreadsheet sheet = new Spreadsheet();
-            //sheet.SetContentsOfCell("A1", "ok");
-            //sheet.Save(s);
-            StringReader s = new StringReader("sss");
-
+            StringReader s = new StringReader("../../spreadsheet1.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
