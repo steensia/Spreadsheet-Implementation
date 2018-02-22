@@ -202,17 +202,37 @@ namespace SS
                                 }
                                 if (reader["content"][0].Equals("="))
                                 {
-                                    try
+                                    // Check for invalid cell name or formula with oldIsValid regex
+                                    if (this.isValid.ToString().Equals(reader["IsValid"]))
                                     {
-                                        Formula f = new Formula(reader["content"].Substring(1), s => s.ToUpper(), s => this.isValid.IsMatch(s.ToUpper()));
+                                        try
+                                        {
+                                            Formula f = new Formula(reader["content"].Substring(1), s => s.ToUpper(), s => this.isValid.IsMatch(s.ToUpper()));
+                                        }
+                                        catch (CircularException)
+                                        {
+                                            throw new SpreadsheetReadException("The formula contains circular dependencies");
+                                        }
+                                        catch (Exception)
+                                        {
+                                            throw new SpreadsheetReadException("This is an invalid formula");
+                                        }
                                     }
-                                    catch (CircularException)
+                                    // Check for invalid cell name or formula with newIsValid regex
+                                    else 
                                     {
-                                        throw new SpreadsheetReadException("The formula contains circular dependencies");
-                                    }
-                                    catch (Exception)
-                                    {
-                                        throw new SpreadsheetReadException("This is an invalid formula");
+                                        try
+                                        {
+                                            Formula f = new Formula(reader["content"].Substring(1), s => s.ToUpper(), s => newIsValid.IsMatch(s.ToUpper()));
+                                        }
+                                        catch (CircularException)
+                                        {
+                                            throw new SpreadsheetReadException("The formula contains circular dependencies");
+                                        }
+                                        catch (Exception)
+                                        {
+                                            throw new SpreadsheetReadException("This is an invalid formula");
+                                        }
                                     }
                                     SetContentsOfCell(reader["name"], reader["content"]);
                                 }
