@@ -255,12 +255,12 @@ namespace MyPS6Tests
         {
             Spreadsheet s = new Spreadsheet();
             HashSet<string> t = new HashSet<string>();
-            for (int i = 0; i < 10_000; i++)
+            for (int i = 0; i < 1_000; i++)
             {
                 s.SetContentsOfCell("A1" + i, "B2" + i);
                 t.Add("A1" + i);
             }
-            for (int i = 777; i < 777_777; i++)
+            for (int i = 777; i < 1_000; i++)
             {
                 t.Remove("A1" + i);
                 s.SetContentsOfCell("A1" + i, "");
@@ -333,8 +333,7 @@ namespace MyPS6Tests
         [TestMethod]
         public void SaveTest()
         {
-            StringWriter s = new StringWriter();
-            s.Write("../../spreadsheet1.xml");
+            StreamWriter s = new StreamWriter("../../spreadsheet1.xml");
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A1", "ok");
             sheet.SetContentsOfCell("B2", "=7");
@@ -347,9 +346,8 @@ namespace MyPS6Tests
         [TestMethod]
         public void SaveTest2()
         {
-            StringWriter s = new StringWriter();
-            s.Write("../../badText.xml");
-            Spreadsheet sheet = new Spreadsheet(new Regex(@"a3p"));
+            StreamWriter s = new StreamWriter("../../badText.xml");
+            Spreadsheet sheet = new Spreadsheet(new Regex("@[0-10]"));
             sheet.Save(s);
         }
 
@@ -360,8 +358,8 @@ namespace MyPS6Tests
         public void SecondConstructorTest()
         {
             Spreadsheet sheet = new Spreadsheet(new Regex(@"^[1-9]$"));
-            sheet.SetContentsOfCell("9", "4");
-            Assert.AreEqual(4.0, sheet.GetCellContents("9"));
+            sheet.SetContentsOfCell("7", "g");
+            Assert.AreEqual("g", sheet.GetCellContents("7"));
         }
 
         /// <summary>
@@ -370,7 +368,7 @@ namespace MyPS6Tests
         [TestMethod]
         public void ThirdConstructorTest()
         {
-            StringReader s = new StringReader("C://Users//steen//source//repos//spreadsheet//Spreadsheet//Spreadsheet//SampleSavedSpreadsheet.xml");
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/Spreadsheet/SampleSavedSpreadsheet.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
@@ -378,10 +376,10 @@ namespace MyPS6Tests
         /// Check to see if third constructor throws IOException
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(IOException))]
+        [ExpectedException(typeof(FileNotFoundException))]
         public void ThirdConstructorTest2()
         {
-            StringReader s = new StringReader("../../null.xml");
+            StreamReader s = new StreamReader("../../null.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
@@ -393,8 +391,8 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest3()
         {
-            StringReader s = new StringReader("../../badRegex.xml");
-            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/badText.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
         /// <summary>
@@ -405,7 +403,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest4()
         {
-            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
             //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
@@ -417,7 +415,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest5()
         {
-            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
             //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
@@ -429,7 +427,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest6()
         {
-            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
             //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
@@ -441,7 +439,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetVersionException))]
         public void ThirdConstructorTest7()
         {
-            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
             //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
@@ -453,7 +451,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest8()
         {
-            //StringReader s = new StringReader("../../spreadsheet1.xml");
+            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
             //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
@@ -479,8 +477,7 @@ namespace MyPS6Tests
             sheet.SetContentsOfCell("G7", "4");
             sheet.SetContentsOfCell("A1", "=5");
             sheet.SetContentsOfCell("B4", "=G7+A1");
-            StringWriter temp = new StringWriter();
-            temp.Write("../../spreadsheet2.xml");
+            StreamWriter temp = new StreamWriter("../../spreadsheet2.xml");
             sheet.Save(temp);
             Assert.IsTrue(sheet.Changed == false);
         }

@@ -1,4 +1,1 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<spreadsheet IsValid="^[a-zA-Z]+[1-9][0-9]*$">
-  <cell name="A1" contents="ok"></cell>
-</spreadsheet>
+<?xml version="1.0" encoding="utf-8"?><spreadsheet IsValid="^[a-zA-Z]+[1-9][0-9]*$"><cell name="A1" contents="ok"></cell><cell name="B2" contents="=7"></cell></spreadsheet>
