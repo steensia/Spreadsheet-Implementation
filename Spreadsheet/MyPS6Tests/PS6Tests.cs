@@ -93,19 +93,6 @@ namespace MyPS6Tests
         }
 
         /// <summary>
-        /// Check to see if Save works and saves XML document.
-        /// </summary>
-        [TestMethod]
-        public void SaveTest()
-        {
-            StringWriter s = new StringWriter();
-            s.Write("../../spreadsheet1.xml");
-            Spreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("A1", "ok");
-            sheet.Save(s);
-        }
-
-        /// <summary>
         /// Check to see if SetContentsOfCell throws ArgumentNullExcepion
         /// when content is null
         /// </summary>
@@ -341,11 +328,24 @@ namespace MyPS6Tests
         }
 
         /// <summary>
+        /// Check to see if Save works and saves XML document.
+        /// </summary>
+        [TestMethod]
+        public void SaveTest()
+        {
+            StringWriter s = new StringWriter();
+            s.Write("../../spreadsheet1.xml");
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "ok");
+            sheet.Save(s);
+        }
+
+        /// <summary>
         /// Check to see if second constructor accepts new C# regex
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(RegexMatchTimeoutException))]
-        public void SeconddConstructorTest()
+        public void SecondConstructorTest()
         {
             Spreadsheet sheet = new Spreadsheet(new Regex(@"^.$"));
         }
