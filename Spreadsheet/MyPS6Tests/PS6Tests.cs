@@ -181,6 +181,7 @@ namespace MyPS6Tests
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A1", "=C3");
+            sheet.SetContentsOfCell("C3", "=A1");
             sheet.SetContentsOfCell("B1", "=A1");
             sheet.SetContentsOfCell("C3", "=B1");
         }
@@ -557,7 +558,7 @@ namespace MyPS6Tests
         }
 
         /// <summary>
-        /// Create XML file with invalid regex
+        /// Check to see if Save works and saves XML document.
         /// </summary>
         [TestMethod]
         public void SaveTest2()
@@ -569,7 +570,7 @@ namespace MyPS6Tests
         }
 
         /// <summary>
-        /// Create XML file with invalid regex
+        /// Check to see if Save works and saves XML document.
         /// </summary>
         [TestMethod]
         public void SaveTest3()

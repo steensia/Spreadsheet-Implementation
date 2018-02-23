@@ -504,18 +504,20 @@ namespace SS
         /// </summary>
         protected override ISet<string> SetCellContents(string name, Formula formula)
         {
+            HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
+
             // Check if cell already exists
             if (this.cellMap.ContainsKey(name))
             {
                 // Preserve old cell and its links before modifying
                 Cell oldCell = this.cellMap[name];
-                HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
 
                 // Add links to each cell, replace old cell and check if circular dependency exists
                 foreach (var form in formula.GetVariables())
                 {
                     set.AddDependency(name, form);
                 }
+                // Set the cell's name, content, and value.
                 try
                 {
                     this.cellMap[name] = new Cell(name, formula, formula.Evaluate(Lookup1));
@@ -531,34 +533,38 @@ namespace SS
                 catch (FormulaEvaluationException)
                 {
                     this.cellMap[name] = new Cell(name, formula, new FormulaError());
+                    return new HashSet<string>(GetCellsToRecalculate(name));
                 }
             }
             // Otherwise, create new cell and dependencies
             else
             {
-                HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
                 foreach (var form in formula.GetVariables())
                 {
                     set.AddDependency(name, form);
                 }
+                // Set the cell's name, content, and value.
                 try
-                { 
+                {
                     this.cellMap[name] = new Cell(name, formula, formula.Evaluate(Lookup1));
                     return new HashSet<string>(GetCellsToRecalculate(name));
-                }
-                // If creating cell causes circular, revert back to when cell didn't exist and throw exception
-                catch (CircularException)
-                {
-                    set.ReplaceDependents(name, oldDentSet);
-                    this.cellMap.Remove(name);
-                    throw new CircularException();
-                }
+                }            
                 catch (FormulaEvaluationException)
                 {
                     this.cellMap[name] = new Cell(name, formula, new FormulaError());
                 }
             }
-            return new HashSet<string>(GetCellsToRecalculate(name));
+            try
+            {
+                return new HashSet<string>(GetCellsToRecalculate(name));
+            }
+            // Remove the cell that caused circular dependency before throwing exception
+            catch (CircularException)
+            {
+                set.ReplaceDependents(name, oldDentSet);
+                this.cellMap.Remove(name);
+                throw new CircularException();
+            }
         }
 
         /// <summary>
@@ -599,14 +605,9 @@ namespace SS
         /// <returns></returns>
         private double Lookup1(String cellName)
         {
-            if (this.cellMap.TryGetValue(cellName, out Cell temp))
+            if (this.cellMap.TryGetValue(cellName, out Cell temp) && !(temp.value is FormulaError))
             {
-                if (!(temp.value is FormulaError))
-                {
-                    return (double)temp.value;
-                }
-                // If value is a FormulaError, arbitrarily return 0
-                return 0;
+                return (double)temp.value;
             }
             // Variable doesn't have an assigned double
             else
