@@ -128,9 +128,9 @@ namespace SS
         /// See the AbstractSpreadsheet.Save method and Spreadsheet.xsd for the file format 
         /// specification.  
         ///
-        /// *If there's a problem reading source, throws an IOException.
+        /// If there's a problem reading source, throws an IOException.
         ///
-        /// *Else if the contents of source are not consistent with the schema in Spreadsheet.xsd, 
+        /// Else if the contents of source are not consistent with the schema in Spreadsheet.xsd, 
         /// throws a SpreadsheetReadException.  
         ///
         /// Else if the IsValid string contained in source is not a valid C# regular expression, throws
@@ -154,6 +154,10 @@ namespace SS
         /// the new Spreadsheet's IsValid regular expression should be newIsValid.
         public Spreadsheet(TextReader source, Regex newIsValid)
         {
+            this.cellMap = new Dictionary<string, Cell>();
+            this.set = new DependencyGraph();
+            Regex oldIsValid = new Regex(cellNamePattern);
+
             // Create HashSet to check for duplicates
             //HashSet<string> temp = new HashSet<string>();
 
@@ -166,87 +170,79 @@ namespace SS
             settings.ValidationType = ValidationType.Schema;
             settings.Schemas = sc;
             settings.ValidationEventHandler += ValidationCallback;
-            try
-            {
-                using (XmlReader reader = XmlReader.Create(source, settings))
-                {
-                    while (reader.Read())
-                    {
-                        if (reader.IsStartElement())
-                        {
-                            switch (reader.Name)
-                            {
-                                case "IsValid":
-                                    // Check if the C# regex is valid and refer to as oldIsInvalid
-                                    try
-                                    {
-                                        Regex oldIsInvalid = new Regex(reader["IsValid"]);
-                                        this.isValid = oldIsInvalid;
-                                    }
-                                    catch (Exception)
-                                    {
-                                        throw new SpreadsheetReadException("IsValid in source is not a valid C# regular expression");
-                                    }
-                                    break;
 
-                                case "Cell":
-                                    // Invalid cell name
+            using (XmlReader reader = XmlReader.Create(source, settings))
+            {
+                while (reader.Read())
+                {
+                    if (reader.IsStartElement())
+                    {
+                        switch (reader.Name)
+                        {
+                            case "spreadsheet":
+                                // Check if the C# regex is valid and refer to as oldIsInvalid
+                                try
+                                {
+                                    oldIsValid = new Regex(reader["IsValid"]);
+                                    this.isValid = oldIsValid;
+                                }
+                                catch (ArgumentException)
+                                {
+                                    throw new SpreadsheetReadException("IsValid in source is not a valid C# regular expression");
+                                }
+                                break;
+
+                            case "cell":
+                                // Check if duplicate names exist
+                                if (this.cellMap.ContainsKey(reader["name"].ToUpper()))
+                                {
+                                    throw new SpreadsheetReadException("Source cannot contain duplicate cell names");
+                                }
+                                else
+                                {
+                                    this.isValid = oldIsValid;
+                                    // Check for invalid cell names
                                     if (!this.isValid.IsMatch(reader["name"]))
                                     {
-                                        throw new SpreadsheetVersionException("Source cannot contain invalid cell name or an invalid formula");
+                                        throw new SpreadsheetReadException("This is an invalid formula");
+                                    }
+                                    // Check for invalid formulas
+                                    else
+                                    {
+                                        // Check for invalid formula with oldIsValid regex
+                                        try
+                                        {
+                                            SetContentsOfCell(reader["name"], reader["contents"]);
+                                        }
+                                        catch (CircularException)
+                                        {
+                                            throw new SpreadsheetReadException("The formula contains circular dependencies");
+                                        }
+                                        catch (Exception)
+                                        {
+                                            throw new SpreadsheetReadException("This is an invalid formula");
+                                        }
 
-                                    }
-                                    // Check if duplicate names exist
-                                    if (this.cellMap.ContainsKey(reader["name"].ToUpper()))
-                                    {
-                                        throw new SpreadsheetReadException("Source cannot contain invalid cell name or an invalid formula");
-                                    }
-                                    if (reader["content"][0].Equals("="))
-                                    {
-                                        // Check for invalid cell name or formula with oldIsValid regex
-                                        if (this.isValid.ToString().Equals(reader["IsValid"]))
+                                        // Check for invalid formula with newIsValid regex
+                                        try
                                         {
-                                            try
-                                            {
-                                                Formula f = new Formula(reader["content"].Substring(1), s => s.ToUpper(), s => this.isValid.IsMatch(s.ToUpper()));
-                                            }
-                                            catch (CircularException)
-                                            {
-                                                throw new SpreadsheetReadException("The formula contains circular dependencies");
-                                            }
-                                            catch (Exception)
-                                            {
-                                                throw new SpreadsheetReadException("This is an invalid formula");
-                                            }
+                                            this.isValid = newIsValid;
+                                            SetContentsOfCell(reader["name"], reader["contents"]);
                                         }
-                                        // Check for invalid cell name or formula with newIsValid regex
-                                        else
+                                        catch (CircularException)
                                         {
-                                            try
-                                            {
-                                                Formula f = new Formula(reader["content"].Substring(1), s => s.ToUpper(), s => newIsValid.IsMatch(s.ToUpper()));
-                                            }
-                                            catch (CircularException)
-                                            {
-                                                throw new SpreadsheetReadException("The formula contains circular dependencies");
-                                            }
-                                            catch (Exception)
-                                            {
-                                                throw new SpreadsheetReadException("This is an invalid formula");
-                                            }
+                                            throw new SpreadsheetReadException("The formula contains circular dependencies");
                                         }
-                                        SetContentsOfCell(reader["name"], reader["content"]);
+                                        catch (Exception)
+                                        {
+                                            throw new SpreadsheetVersionException("Source cannot contain invalid cell name or an invalid formula");
+                                        }
                                     }
-                                    break;
-                            }
+                                }       
+                                break;
                         }
                     }
-                    Spreadsheet newSheet = new Spreadsheet(newIsValid);
                 }
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                throw new IOException();
             }
         }
 

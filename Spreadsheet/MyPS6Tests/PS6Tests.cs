@@ -328,30 +328,6 @@ namespace MyPS6Tests
         }
 
         /// <summary>
-        /// Check to see if Save works and saves XML document.
-        /// </summary>
-        [TestMethod]
-        public void SaveTest()
-        {
-            StreamWriter s = new StreamWriter("../../spreadsheet1.xml");
-            Spreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("A1", "ok");
-            sheet.SetContentsOfCell("B2", "=7");
-            sheet.Save(s);
-        }
-
-        /// <summary>
-        /// Create XML file with invalid regex
-        /// </summary>
-        [TestMethod]
-        public void SaveTest2()
-        {
-            StreamWriter s = new StreamWriter("../../badText.xml");
-            Spreadsheet sheet = new Spreadsheet(new Regex("@[0-10]"));
-            sheet.Save(s);
-        }
-
-        /// <summary>
         /// Check to see if second constructor accepts new C# regex
         /// </summary>
         [TestMethod]
@@ -370,6 +346,8 @@ namespace MyPS6Tests
         {
             StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/Spreadsheet/SampleSavedSpreadsheet.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
+            Assert.AreEqual(1.5, sheet.GetCellContents("A1"));
+            Assert.AreEqual("Hello", sheet.GetCellContents("B2"));
         }
 
         /// <summary>
@@ -391,7 +369,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest3()
         {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/badText.xml");
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet2.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
@@ -403,8 +381,8 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest4()
         {
-            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
-            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet3.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
         /// <summary>
@@ -415,8 +393,8 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest5()
         {
-            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
-            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet4.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
         /// <summary>
@@ -427,8 +405,8 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest6()
         {
-            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
-            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet1.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
         /// <summary>
@@ -439,8 +417,8 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetVersionException))]
         public void ThirdConstructorTest7()
         {
-            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
-            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet5.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
         /// <summary>
@@ -451,8 +429,8 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest8()
         {
-            //StreamReader s = new StreamReader("../../spreadsheet1.xml");
-            //Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet6.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
         /// <summary>
@@ -477,7 +455,7 @@ namespace MyPS6Tests
             sheet.SetContentsOfCell("G7", "4");
             sheet.SetContentsOfCell("A1", "=5");
             sheet.SetContentsOfCell("B4", "=G7+A1");
-            StreamWriter temp = new StreamWriter("../../spreadsheet2.xml");
+            StreamWriter temp = new StreamWriter("../../sample.xml");
             sheet.Save(temp);
             Assert.IsTrue(sheet.Changed == false);
         }
@@ -493,5 +471,43 @@ namespace MyPS6Tests
             sheet.SetContentsOfCell("G7", "7");
             Assert.IsTrue(sheet.Changed == true);
         }
+
+        ////Methods to create XML file
+        ///// <summary>
+        ///// Check to see if Save works and saves XML document.
+        ///// </summary>
+        //[TestMethod]
+        //public void SaveTest()
+        //{
+        //    StreamWriter s = new StreamWriter("../../spreadsheet6.xml");
+        //    Spreadsheet sheet = new Spreadsheet();
+        //    sheet.SetContentsOfCell("A1", "=A2+5");
+        //    sheet.SetContentsOfCell("B2", "=A1");
+        //    sheet.Save(s);
+        //}
+
+        ///// <summary>
+        ///// Create XML file with invalid regex
+        ///// </summary>
+        //[TestMethod]
+        //public void SaveTest2()
+        //{
+        //    StreamWriter s = new StreamWriter("../../spreadsheet2.xml");
+        //    Spreadsheet sheet = new Spreadsheet(new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
+        //    sheet.SetContentsOfCell("a2", "v");
+        //    sheet.Save(s);
+        //}
+
+        ///// <summary>
+        ///// Create XML file with invalid regex
+        ///// </summary>
+        //[TestMethod]
+        //public void SaveTest3()
+        //{
+        //    StreamWriter s = new StreamWriter("../../spreadsheet3.xml");
+        //    Spreadsheet sheet = new Spreadsheet(new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
+        //    sheet.SetContentsOfCell("x2", "a");
+        //    sheet.Save(s);
+        //}
     }
 }
