@@ -77,6 +77,9 @@
     <Content Include="spreadsheet4.xml" />
     <Content Include="spreadsheet5.xml" />
     <Content Include="spreadsheet6.xml" />
+    <Content Include="spreadsheet7.xml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

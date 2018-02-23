@@ -69,7 +69,7 @@ namespace SS
         // Fields
         private Dictionary<string, Cell> cellMap;
         private DependencyGraph set;
-        private Regex isValid;
+        private Regex IsValid;
 
         // Constant(s)
         const String cellNamePattern = @"^[a-zA-Z]+[1-9][0-9]*$";
@@ -92,16 +92,6 @@ namespace SS
                 this.content = content;
                 this.value = value;
             }
-
-            /// <summary>
-            /// New constructor to copy the contents of passed in Cell
-            /// </summary>
-            public Cell(Cell other)
-            {
-                this.name = other.name;
-                this.content = other.content;
-                this.value = other.value;
-            }
         }
 
         /// <summary>
@@ -112,15 +102,15 @@ namespace SS
         {
             this.cellMap = new Dictionary<string, Cell>();
             this.set = new DependencyGraph();
-            this.isValid = new Regex(cellNamePattern);
+            this.IsValid = new Regex(cellNamePattern);
         }
 
         /// Creates an empty Spreadsheet whose IsValid regular expression is provided as the parameter
-        public Spreadsheet(Regex isValid)
+        public Spreadsheet(Regex IsValid)
         {
             this.cellMap = new Dictionary<string, Cell>();
             this.set = new DependencyGraph();
-            this.isValid = isValid;
+            this.IsValid = IsValid;
         }
 
         /// Creates a Spreadsheet that is a duplicate of the spreadsheet saved in source.
@@ -156,10 +146,8 @@ namespace SS
         {
             this.cellMap = new Dictionary<string, Cell>();
             this.set = new DependencyGraph();
-            Regex oldIsValid = new Regex(cellNamePattern);
 
-            // Create HashSet to check for duplicates
-            //HashSet<string> temp = new HashSet<string>();
+            Regex oldIsValid = new Regex(cellNamePattern);
 
             XmlSchemaSet sc = new XmlSchemaSet();
 
@@ -184,7 +172,7 @@ namespace SS
                                 try
                                 {
                                     oldIsValid = new Regex(reader["IsValid"]);
-                                    this.isValid = oldIsValid;
+                                    this.IsValid = oldIsValid;
                                 }
                                 catch (ArgumentException)
                                 {
@@ -198,15 +186,16 @@ namespace SS
                                 {
                                     throw new SpreadsheetReadException("Source cannot contain duplicate cell names");
                                 }
+                                // Determine if each name and content is valid or not with old/newIsValid
                                 else
                                 {
-                                    this.isValid = oldIsValid;
                                     // Check for invalid cell names
-                                    if (!this.isValid.IsMatch(reader["name"]))
+                                    this.IsValid = oldIsValid;
+                                    if (!this.IsValid.IsMatch(reader["name"]))
                                     {
                                         throw new SpreadsheetReadException("This is an invalid formula");
                                     }
-                                    // Check for invalid formulas
+                                    // Check for valid/invalid contents (string, double, formula)
                                     else
                                     {
                                         // Check for invalid formula with oldIsValid regex
@@ -226,16 +215,12 @@ namespace SS
                                         // Check for invalid formula with newIsValid regex
                                         try
                                         {
-                                            this.isValid = newIsValid;
+                                            this.IsValid = newIsValid;
                                             SetContentsOfCell(reader["name"], reader["contents"]);
-                                        }
-                                        catch (CircularException)
-                                        {
-                                            throw new SpreadsheetReadException("The formula contains circular dependencies");
                                         }
                                         catch (Exception)
                                         {
-                                            throw new SpreadsheetVersionException("Source cannot contain invalid cell name or an invalid formula");
+                                            throw new SpreadsheetVersionException("This is an invalid formula");
                                         }
                                     }
                                 }       
@@ -279,20 +264,21 @@ namespace SS
             //using (XmlWriter writer = XmlWriter.Create("../../Spreadsheet.xml"))
             using (XmlWriter writer = XmlWriter.Create(dest))
             {
-
                 writer.WriteStartDocument();
                 writer.WriteStartElement("spreadsheet");
-                writer.WriteAttributeString("IsValid", isValid.ToString());
+                writer.WriteAttributeString("IsValid", IsValid.ToString());
 
                 foreach (var cell in this.cellMap.Keys)
                 {
                     writer.WriteStartElement("cell");
                     writer.WriteAttributeString("name", this.cellMap[cell].name);
+                    // Prepend formulas with =
                     if (this.cellMap[cell].content.GetType() == typeof(Formula))
                     {
                         writer.WriteAttributeString("contents", "=" + this.cellMap[cell].content.ToString());
 
                     }
+                    // Strings and double contents must be represented as strings
                     else
                     {
                         writer.WriteAttributeString("contents", this.cellMap[cell].content.ToString());
@@ -315,7 +301,7 @@ namespace SS
         /// </summary>
         public override object GetCellValue(string name)
         {
-            if (name == null || !Regex.IsMatch(name, isValid.ToString()))
+            if (name == null || !Regex.IsMatch(name, IsValid.ToString()))
             {
                 throw new InvalidNameException();
             }
@@ -366,7 +352,9 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            if (name == null || !Regex.IsMatch(name, isValid.ToString()))
+            // Check for name is null or invalid here, so I don't need to check
+            // for it individually in each SetCellContents method
+            if (name == null || !Regex.IsMatch(name, IsValid.ToString()))
             {
                 throw new InvalidNameException();
             }
@@ -377,90 +365,17 @@ namespace SS
             {
                 SetCellContents(name, result);
 
-                //if (this.cellMap.ContainsKey(name))
-                //{
-                //    // Remove links of the previous cell and set new cell content
-                //    set.ReplaceDependents(name, new HashSet<string>());
-                //    this.cellMap[name] = new Cell(name, content, result);
-                //}
-                //else
-                //{
-                //    this.cellMap[name] = new Cell(name, content, result);
-                //}
             }
             // Determine if the content is a valid formula
             else if (content.Length > 1 && content[0].Equals('='))
             {
-                Formula f = new Formula(content.Substring(1), s => s.ToUpper(), s => this.isValid.IsMatch(s.ToUpper()));
+                Formula f = new Formula(content.Substring(1), s => s.ToUpper(), s => this.IsValid.IsMatch(s.ToUpper()));
                 SetCellContents(name, f);
-                //if (this.cellMap.ContainsKey(name))
-                //{
-                //    // Preserve old cell and its links before modifying
-                //    Cell oldCell = new Cell(this.cellMap[name]);
-                //    HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
-                //    // Add links to each cell, replace old cell and check if circular dependency exists
-                //    try
-                //    {
-                //        foreach (var form in f.GetVariables())
-                //        {
-                //            set.AddDependency(name, form);
-                //        }
-                //        this.cellMap[name] = new Cell(name, f, f.Evaluate(s => Lookup1(name)));
-                //        return new HashSet<string>(GetCellsToRecalculate(name));
-                //    }
-                //    // Revert to the previous cell and its links, then throw exception
-                //    catch (CircularException)
-                //    {
-                //        set.ReplaceDependents(name, oldDentSet);
-                //        this.cellMap[name] = new Cell(oldCell);
-                //        throw new CircularException();
-                //    }
-                //    catch (FormulaEvaluationException)
-                //    {
-                //        this.cellMap[name] = new Cell(name, content, new FormulaError());
-                //    }
-                //}
-                //// Create a new cell and its dependencies
-                //else
-                //{
-                //    try
-                //    {
-                //        foreach (var form in f.GetVariables())
-                //        {
-                //            set.AddDependency(name, form);
-                //        }
-                //        this.cellMap[name] = new Cell(name, f, f.Evaluate(s => Lookup1(name)));
-                //    }
-                //    catch (FormulaEvaluationException)
-                //    {
-                //        this.cellMap[name] = new Cell(name, f, new FormulaError());
-                //    }
-                //}
             }
             // Determined that content is a string
             else
             {
                 SetCellContents(name, content);
-                //    string value = content;
-                //    if (this.cellMap.ContainsKey(name))
-                //    {
-                //        // If string is empty, removes links with link and set cell as empty
-                //        if (content.Equals(""))
-                //        {
-                //            set.ReplaceDependents(name, new HashSet<string>());
-                //            this.cellMap[name] = new Cell(name, content, value);
-                //        }
-                //        else
-                //        {
-                //            set.ReplaceDependents(name, new HashSet<string>());
-                //            this.cellMap[name] = new Cell(name, content, value);
-                //        }
-                //    }
-                //    else
-                //    {
-                //        this.cellMap[name] = new Cell(name, content, value);
-                //    }
-                //
             }
             Changed = true;
             return new HashSet<string>(GetCellsToRecalculate(name));
@@ -492,7 +407,7 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
-            if (name == null || !Regex.IsMatch(name, isValid.ToString()))
+            if (name == null || !Regex.IsMatch(name, IsValid.ToString()))
             {
                 throw new InvalidNameException();
             }
@@ -517,10 +432,6 @@ namespace SS
         /// </summary>
         protected override ISet<string> SetCellContents(string name, double number)
         {
-            if (name == null || !Regex.IsMatch(name, isValid.ToString()))
-            {
-                throw new InvalidNameException();
-            }
             // Check if cell exists, then modify all links and set new content
             if (this.cellMap.ContainsKey(name))
             {
@@ -552,10 +463,6 @@ namespace SS
             if (text == null)
             {
                 throw new ArgumentNullException();
-            }
-            if (name == null || !Regex.IsMatch(name, isValid.ToString()))
-            {
-                throw new InvalidNameException();
             }
             // Check if empty string, then remove existing link of the cell and make its contents empty
             if (text.Equals(""))
@@ -594,11 +501,6 @@ namespace SS
         /// </summary>
         protected override ISet<string> SetCellContents(string name, Formula formula)
         {
-            HashSet<string> varSet = new HashSet<string>(GetNamesOfAllNonemptyCells());
-            if (name == null || !Regex.IsMatch(name, isValid.ToString()))
-            {
-                throw new InvalidNameException();
-            }
             // Check if cell already exists
             if (this.cellMap.ContainsKey(name))
             {
@@ -619,7 +521,7 @@ namespace SS
                 catch (CircularException)
                 {
                     set.ReplaceDependents(name, oldDentSet);
-                    this.cellMap[name] = new Cell(oldCell);
+                    this.cellMap[name] = new Cell(oldCell.name, oldCell.content, oldCell.value);
                     throw new CircularException();
                 }
                 catch (FormulaEvaluationException)
@@ -669,7 +571,7 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            else if (!Regex.IsMatch(name, isValid.ToString()))
+            else if (!Regex.IsMatch(name, IsValid.ToString()))
             {
                 throw new InvalidNameException();
             }

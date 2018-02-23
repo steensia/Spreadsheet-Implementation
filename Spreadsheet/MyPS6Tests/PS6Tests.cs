@@ -76,8 +76,8 @@ namespace MyPS6Tests
         public void GetCellValueTest6()
         {
             Spreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("A1", "parameter");
-            sheet.GetCellContents("05");
+            sheet.SetContentsOfCell("A12", "parameter");
+            sheet.GetCellValue("A222A");
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace MyPS6Tests
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A1", "parameter");
-            Assert.IsTrue("".Equals(sheet.GetCellContents("X2")));
+            Assert.IsTrue("".Equals(sheet.GetCellValue("X2")));
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace MyPS6Tests
         public void SetContentsOfCellTest3()
         {
             Spreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("5A", "5");
+            sheet.SetContentsOfCell("A55A", "5");
         }
 
         /// <summary>
@@ -149,8 +149,12 @@ namespace MyPS6Tests
         public void SetContentsOfCellTest5()
         {
             Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "=5+5");
             sheet.SetContentsOfCell("A1", "=A2");
-            sheet.SetContentsOfCell("A2", "=A1+5");
+            sheet.SetContentsOfCell("G4", "=2+2");
+            sheet.SetContentsOfCell("G4", "=A1");
+            sheet.SetContentsOfCell("A2", "=5");
+            sheet.SetContentsOfCell("A2", "=G4");
         }
 
         /// <summary>
@@ -348,6 +352,8 @@ namespace MyPS6Tests
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
             Assert.AreEqual(1.5, sheet.GetCellContents("A1"));
             Assert.AreEqual("Hello", sheet.GetCellContents("B2"));
+            Assert.AreEqual(8.0, sheet.GetCellContents("A2"));
+            Assert.AreEqual(35.0, sheet.GetCellValue("A3"));
         }
 
         /// <summary>
@@ -399,7 +405,7 @@ namespace MyPS6Tests
 
         /// <summary>
         /// Check to see if third constructor throws SpreadsheetReadException
-        /// when there is an invalid cell name or formula (oldIsValid)
+        /// when there is an invalid cell name (oldIsValid)
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadException))]
@@ -410,26 +416,38 @@ namespace MyPS6Tests
         }
 
         /// <summary>
-        /// Check to see if third constructor throws SpreadsheetVersionException
-        /// when there is an invalid cell name or formula (newIsValid)
+        /// Check to see if third constructor throws SpreadsheetReadException
+        /// when there is an invalid formula (oldIsValid)
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(SpreadsheetVersionException))]
+        [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest7()
         {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet5.xml");
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet7.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
         /// <summary>
         /// Check to see if third constructor throws SpreadsheetReadException
-        /// when there is a circular dependency
+        /// when there is a circular dependency (oldIsValid)
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest8()
         {
             StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet6.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
+        }
+
+        /// <summary>
+        /// Check to see if third constructor throws SpreadsheetVersionException
+        /// when there is an invalid formula (newIsValid)
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetVersionException))]
+        public void ThirdConstructorTest9()
+        {
+            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet5.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
@@ -472,14 +490,15 @@ namespace MyPS6Tests
             Assert.IsTrue(sheet.Changed == true);
         }
 
-        ////Methods to create XML file
+        //Methods to create XML files
+
         ///// <summary>
         ///// Check to see if Save works and saves XML document.
         ///// </summary>
         //[TestMethod]
         //public void SaveTest()
         //{
-        //    StreamWriter s = new StreamWriter("../../spreadsheet6.xml");
+        //    StreamWriter s = new StreamWriter("../../spreadsheet7.xml");
         //    Spreadsheet sheet = new Spreadsheet();
         //    sheet.SetContentsOfCell("A1", "=A2+5");
         //    sheet.SetContentsOfCell("B2", "=A1");
