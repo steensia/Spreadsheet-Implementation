@@ -375,8 +375,8 @@ namespace MyPS6Tests
         /// </summary>
         [TestMethod]
         public void ThirdConstructorTest()
-        {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/Spreadsheet/SampleSavedSpreadsheet.xml");
+        {        
+            StreamReader s = new StreamReader("../../SampleSavedSpreadsheet.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
             Assert.AreEqual(1.5, sheet.GetCellContents("A1"));
             Assert.AreEqual("Hello", sheet.GetCellContents("B2"));
@@ -403,7 +403,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest3()
         {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet2.xml");
+            StreamReader s = new StreamReader("../../spreadsheet2.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
@@ -415,7 +415,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest4()
         {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet3.xml");
+            StreamReader s = new StreamReader("../../spreadsheet3.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^.$"));
         }
 
@@ -427,7 +427,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest5()
         {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet4.xml");
+            StreamReader s = new StreamReader("../../spreadsheet4.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
@@ -439,7 +439,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest6()
         {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet1.xml");
+            StreamReader s = new StreamReader("../../spreadsheet1.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
@@ -451,7 +451,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest7()
         {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet7.xml");
+            StreamReader s = new StreamReader("../../spreadsheet7.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
@@ -463,7 +463,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetReadException))]
         public void ThirdConstructorTest8()
         {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet6.xml");
+            StreamReader s = new StreamReader("../../spreadsheet6.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 
@@ -475,7 +475,7 @@ namespace MyPS6Tests
         [ExpectedException(typeof(SpreadsheetVersionException))]
         public void ThirdConstructorTest9()
         {
-            StreamReader s = new StreamReader("C:/Users/steen/source/repos/spreadsheet/Spreadsheet/MyPS6Tests/spreadsheet5.xml");
+            StreamReader s = new StreamReader("../../spreadsheet5.xml");
             Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
         }
 

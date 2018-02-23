@@ -67,6 +67,7 @@
   <ItemGroup>
     <Content Include="sample.xml" />
     <Content Include="sample2.xml" />
+    <Content Include="SampleSavedSpreadsheet.xml" />
     <Content Include="spreadsheet1.xml">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
