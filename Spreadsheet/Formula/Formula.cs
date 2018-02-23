@@ -318,7 +318,7 @@ namespace Formulas
                         {
                             numTemp = lookup(t);
                         }
-                        catch
+                        catch (UndefinedVariableException)
                         {
                             throw new FormulaEvaluationException("This cannot be evaluated");
                         }

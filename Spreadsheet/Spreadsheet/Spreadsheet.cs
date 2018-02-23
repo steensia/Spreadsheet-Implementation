@@ -103,6 +103,7 @@ namespace SS
             this.cellMap = new Dictionary<string, Cell>();
             this.set = new DependencyGraph();
             this.IsValid = new Regex(cellNamePattern);
+            Changed = false;
         }
 
         /// Creates an empty Spreadsheet whose IsValid regular expression is provided as the parameter
@@ -111,6 +112,7 @@ namespace SS
             this.cellMap = new Dictionary<string, Cell>();
             this.set = new DependencyGraph();
             this.IsValid = IsValid;
+            Changed = false;
         }
 
         /// Creates a Spreadsheet that is a duplicate of the spreadsheet saved in source.
@@ -223,12 +225,13 @@ namespace SS
                                             throw new SpreadsheetVersionException("This is an invalid formula");
                                         }
                                     }
-                                }       
+                                }
                                 break;
                         }
                     }
                 }
             }
+            Changed = false;
         }
 
 
@@ -507,13 +510,14 @@ namespace SS
                 // Preserve old cell and its links before modifying
                 Cell oldCell = this.cellMap[name];
                 HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
+
                 // Add links to each cell, replace old cell and check if circular dependency exists
+                foreach (var form in formula.GetVariables())
+                {
+                    set.AddDependency(name, form);
+                }
                 try
                 {
-                    foreach (var form in formula.GetVariables())
-                    {
-                        set.AddDependency(name, form);
-                    }
                     this.cellMap[name] = new Cell(name, formula, formula.Evaluate(Lookup1));
                     return new HashSet<string>(GetCellsToRecalculate(name));
                 }
@@ -529,16 +533,25 @@ namespace SS
                     this.cellMap[name] = new Cell(name, formula, new FormulaError());
                 }
             }
-            // Otherwise, replace old cell and create links between cells
+            // Otherwise, create new cell and dependencies
             else
             {
-                try
+                HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
+                foreach (var form in formula.GetVariables())
                 {
-                    foreach (var form in formula.GetVariables())
-                    {
-                        set.AddDependency(name, form);
-                    }
+                    set.AddDependency(name, form);
+                }
+                try
+                { 
                     this.cellMap[name] = new Cell(name, formula, formula.Evaluate(Lookup1));
+                    return new HashSet<string>(GetCellsToRecalculate(name));
+                }
+                // If creating cell causes circular, revert back to when cell didn't exist and throw exception
+                catch (CircularException)
+                {
+                    set.ReplaceDependents(name, oldDentSet);
+                    this.cellMap.Remove(name);
+                    throw new CircularException();
                 }
                 catch (FormulaEvaluationException)
                 {
@@ -588,8 +601,14 @@ namespace SS
         {
             if (this.cellMap.TryGetValue(cellName, out Cell temp))
             {
-                return (double)temp.value;
+                if (!(temp.value is FormulaError))
+                {
+                    return (double)temp.value;
+                }
+                // If value is a FormulaError, arbitrarily return 0
+                return 0;
             }
+            // Variable doesn't have an assigned double
             else
             {
                 throw new UndefinedVariableException(cellName);

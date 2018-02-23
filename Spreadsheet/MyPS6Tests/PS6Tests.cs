@@ -93,6 +93,19 @@ namespace MyPS6Tests
         }
 
         /// <summary>
+        /// Check if GetCellValue catches FormulaEvaluationException
+        /// and returns a FormulaError object. (cell name already exists)
+        /// </summary>
+        [TestMethod]
+        public void GetCellValueTest8()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "5");
+            sheet.SetContentsOfCell("A1", "=x5");
+            Assert.IsTrue(sheet.GetCellValue("A1").GetType() == typeof(FormulaError));
+        }
+
+        /// <summary>
         /// Check to see if SetContentsOfCell throws ArgumentNullExcepion
         /// when content is null
         /// </summary>
@@ -142,26 +155,41 @@ namespace MyPS6Tests
 
         /// <summary>
         /// Check if SetContentsOfCell throws CircularException
-        /// when setting a cell causes circular dependency
+        /// when setting a pre-existing cell causes circular dependency
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(CircularException))]
         public void SetContentsOfCellTest5()
         {
             Spreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("A1", "=5+5");
-            sheet.SetContentsOfCell("A1", "=A2");
-            sheet.SetContentsOfCell("G4", "=2+2");
-            sheet.SetContentsOfCell("G4", "=A1");
-            sheet.SetContentsOfCell("A2", "=5");
-            sheet.SetContentsOfCell("A2", "=G4");
+            sheet.SetContentsOfCell("A1", "=5");
+            sheet.SetContentsOfCell("B2", "=7");
+            sheet.SetContentsOfCell("C3", "=8");
+            sheet.SetContentsOfCell("G4", "=A1+4");
+            sheet.SetContentsOfCell("G5", "=B2+1");
+            sheet.SetContentsOfCell("G5", "=G4+2");
+            sheet.SetContentsOfCell("A1", "=G5");
+        }
+
+        /// <summary>
+        /// Check if SetContentsOfCell throws CircularException
+        /// when setting a cell causes circular dependency
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SetContentsOfCellTest6()
+        {
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "=C3");
+            sheet.SetContentsOfCell("B1", "=A1");
+            sheet.SetContentsOfCell("C3", "=B1");
         }
 
         /// <summary>
         /// Check if SetContentsOfCell returns correct set of cells
         /// </summary>
         [TestMethod]
-        public void SetContentsOfCellTest6()
+        public void SetContentsOfCellTest7()
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A1", "=5");
@@ -174,7 +202,7 @@ namespace MyPS6Tests
         /// Check if SetContentsOfCell replaces existing cell with formula
         /// </summary>
         [TestMethod]
-        public void SetContentsOfCellTest7()
+        public void SetContentsOfCellTest8()
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("X1", "2");
@@ -188,7 +216,7 @@ namespace MyPS6Tests
         /// Check if SetContentsOfCell sets cell empty after passing in empty string
         /// </summary>
         [TestMethod]
-        public void SetContentsOfCellTest8()
+        public void SetContentsOfCellTest9()
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A2", "");
@@ -199,7 +227,7 @@ namespace MyPS6Tests
         /// Check if SetContentsOfCell overwrites a cell that had a string, with a string
         /// </summary>
         [TestMethod]
-        public void SetContentsOfCellTest9()
+        public void SetContentsOfCellTest10()
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A2", "bee");
@@ -453,7 +481,7 @@ namespace MyPS6Tests
 
         /// <summary>
         /// Check to see if Changed property returns false when no modification
-        /// is made after creating a spreadsheet.
+        /// is made after creating a default spreadsheet.
         /// </summary>
         [TestMethod]
         public void ChangedTest()
@@ -464,16 +492,39 @@ namespace MyPS6Tests
 
         /// <summary>
         /// Check to see if Changed property returns false when no modification
-        /// is made after creating a spreadsheet.
+        /// is made after creating a spreadsheet w/ Regex.
         /// </summary>
         [TestMethod]
         public void ChangedTest2()
+        {
+            Spreadsheet sheet = new Spreadsheet(new Regex(@"^.^$"));
+            Assert.IsTrue(sheet.Changed == false);
+        }
+
+        /// <summary>
+        /// Check to see if Changed property returns false when no modification
+        /// is made after creating a spreadsheet through reading file.
+        /// </summary>
+        [TestMethod]
+        public void ChangedTest3()
+        {
+            StreamReader s = new StreamReader("C:/Users/steen/Source/Repos/spreadsheet/Spreadsheet/MyPS6Tests/sample.xml");
+            Spreadsheet sheet = new Spreadsheet(s, new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
+            Assert.IsTrue(sheet.Changed == false);
+        }
+
+        /// <summary>
+        /// Check to see if Changed property returns false when no modification
+        /// is made after creating a spreadsheet.
+        /// </summary>
+        [TestMethod]
+        public void ChangedTest4()
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("G7", "4");
             sheet.SetContentsOfCell("A1", "=5");
             sheet.SetContentsOfCell("B4", "=G7+A1");
-            StreamWriter temp = new StreamWriter("../../sample.xml");
+            StreamWriter temp = new StreamWriter("../../sample2.xml");
             sheet.Save(temp);
             Assert.IsTrue(sheet.Changed == false);
         }
@@ -483,7 +534,7 @@ namespace MyPS6Tests
         /// is made after creating a spreadsheet.
         /// </summary>
         [TestMethod]
-        public void ChangedTest3()
+        public void ChangedTest5()
         {
             Spreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("G7", "7");
@@ -492,41 +543,41 @@ namespace MyPS6Tests
 
         //Methods to create XML files
 
-        ///// <summary>
-        ///// Check to see if Save works and saves XML document.
-        ///// </summary>
-        //[TestMethod]
-        //public void SaveTest()
-        //{
-        //    StreamWriter s = new StreamWriter("../../spreadsheet7.xml");
-        //    Spreadsheet sheet = new Spreadsheet();
-        //    sheet.SetContentsOfCell("A1", "=A2+5");
-        //    sheet.SetContentsOfCell("B2", "=A1");
-        //    sheet.Save(s);
-        //}
+        /// <summary>
+        /// Check to see if Save works and saves XML document.
+        /// </summary>
+        [TestMethod]
+        public void SaveTest()
+        {
+            StreamWriter s = new StreamWriter("../../spreadsheet8.xml");
+            Spreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "=A2+5");
+            sheet.SetContentsOfCell("B2", "=A1");
+            sheet.Save(s);
+        }
 
-        ///// <summary>
-        ///// Create XML file with invalid regex
-        ///// </summary>
-        //[TestMethod]
-        //public void SaveTest2()
-        //{
-        //    StreamWriter s = new StreamWriter("../../spreadsheet2.xml");
-        //    Spreadsheet sheet = new Spreadsheet(new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
-        //    sheet.SetContentsOfCell("a2", "v");
-        //    sheet.Save(s);
-        //}
+        /// <summary>
+        /// Create XML file with invalid regex
+        /// </summary>
+        [TestMethod]
+        public void SaveTest2()
+        {
+            StreamWriter s = new StreamWriter("../../spreadsheet9.xml");
+            Spreadsheet sheet = new Spreadsheet(new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
+            sheet.SetContentsOfCell("a2", "v");
+            sheet.Save(s);
+        }
 
-        ///// <summary>
-        ///// Create XML file with invalid regex
-        ///// </summary>
-        //[TestMethod]
-        //public void SaveTest3()
-        //{
-        //    StreamWriter s = new StreamWriter("../../spreadsheet3.xml");
-        //    Spreadsheet sheet = new Spreadsheet(new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
-        //    sheet.SetContentsOfCell("x2", "a");
-        //    sheet.Save(s);
-        //}
+        /// <summary>
+        /// Create XML file with invalid regex
+        /// </summary>
+        [TestMethod]
+        public void SaveTest3()
+        {
+            StreamWriter s = new StreamWriter("../../spreadsheet10.xml");
+            Spreadsheet sheet = new Spreadsheet(new Regex(@"^[a-zA-Z]+[1-9][0-9]*$"));
+            sheet.SetContentsOfCell("x2", "a");
+            sheet.Save(s);
+        }
     }
 }

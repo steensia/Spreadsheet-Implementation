@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <spreadsheet IsValid="^[a-zA-Z]+[1-9]*$">
-  <cell name="A1" contents="=A22A+5"></cell>
+  <cell name="A1" contents="=A22A"></cell>
   <cell name="B2" contents="=A13A"></cell>
   <cell name="A2" contents="=B22"></cell>"
 </spreadsheet>
