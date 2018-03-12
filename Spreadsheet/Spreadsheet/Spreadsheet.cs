@@ -308,6 +308,7 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
+            name = name.ToUpper();
             // Return empty string if cell does not exist
             if (!this.cellMap.ContainsKey(name))
             {
@@ -381,6 +382,7 @@ namespace SS
                 SetCellContents(name, content);
             }
             Changed = true;
+
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
@@ -414,6 +416,7 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
+            name = name.ToUpper();
             // Return empty string if cell does not exist
             if (!this.cellMap.ContainsKey(name))
             {
@@ -446,7 +449,12 @@ namespace SS
             {
                 this.cellMap[name] = new Cell(name, number, number);
             }
-            return new HashSet<string>(GetCellsToRecalculate(name));
+            IEnumerable<string> temp = GetCellsToRecalculate(name);
+            foreach (string cellName in temp)
+            {
+                RecalculateCells(cellName);
+            }
+            return new HashSet<string>(temp);
         }
 
         /// <summary>
@@ -505,7 +513,6 @@ namespace SS
         protected override ISet<string> SetCellContents(string name, Formula formula)
         {
             HashSet<string> oldDentSet = new HashSet<string>(set.GetDependents(name));
-
             // Check if cell already exists
             if (this.cellMap.ContainsKey(name))
             {
@@ -521,7 +528,13 @@ namespace SS
                 try
                 {
                     this.cellMap[name] = new Cell(name, formula, formula.Evaluate(Lookup1));
-                    return new HashSet<string>(GetCellsToRecalculate(name));
+
+                    IEnumerable<string> temp = GetCellsToRecalculate(name);
+                    foreach (string cellName in temp)
+                    {
+                        RecalculateCells(cellName);
+                    }
+                    return new HashSet<string>(temp);
                 }
                 // Revert to the previous cell and its links, then throw exception
                 catch (CircularException)
@@ -533,7 +546,13 @@ namespace SS
                 catch (FormulaEvaluationException)
                 {
                     this.cellMap[name] = new Cell(name, formula, new FormulaError());
-                    return new HashSet<string>(GetCellsToRecalculate(name));
+
+                    IEnumerable<string> temp = GetCellsToRecalculate(name);
+                    foreach (string cellName in temp)
+                    {
+                        RecalculateCells(cellName);
+                    }
+                    return new HashSet<string>(temp);
                 }
             }
             // Otherwise, create new cell and dependencies
@@ -547,7 +566,13 @@ namespace SS
                 try
                 {
                     this.cellMap[name] = new Cell(name, formula, formula.Evaluate(Lookup1));
-                    return new HashSet<string>(GetCellsToRecalculate(name));
+
+                    IEnumerable<string> temp = GetCellsToRecalculate(name);
+                    foreach (string cellName in temp)
+                    {
+                        RecalculateCells(cellName);
+                    }
+                    return new HashSet<string>(temp);
                 }            
                 catch (FormulaEvaluationException)
                 {
@@ -607,19 +632,38 @@ namespace SS
         {
             if (this.cellMap.TryGetValue(cellName, out Cell temp) && !(temp.value is FormulaError))
             {
+                if (temp.value is double)
                 return (double)temp.value;
             }
             // Variable doesn't have an assigned double
-            else
-            {
-                throw new UndefinedVariableException(cellName);
-            }
+            throw new UndefinedVariableException(cellName);
         }
 
         // Display any validation errors.
         private static void ValidationCallback(object sender, ValidationEventArgs e)
         {
             throw new SpreadsheetReadException("Source is not consistent with schema");
+        }
+
+        private void RecalculateCells(string name)
+        {
+            name = name.ToUpper();
+            if (this.cellMap.TryGetValue(name, out Cell temp))
+            {
+                if (temp.content is Formula)
+                {
+                    try
+                    {
+                        temp.value = ((Formula)temp.content).Evaluate(Lookup1);
+                    }
+                    catch
+                    {
+                        temp.value = new FormulaError();
+                    }
+                    this.cellMap.Remove(name);
+                    this.cellMap.Add(name, temp);
+                }
+            }
         }
     }
 }
