@@ -308,6 +308,7 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
+            //Added code
             name = name.ToUpper();
             // Return empty string if cell does not exist
             if (!this.cellMap.ContainsKey(name))
@@ -416,6 +417,7 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
+            //Added code
             name = name.ToUpper();
             // Return empty string if cell does not exist
             if (!this.cellMap.ContainsKey(name))
@@ -449,6 +451,7 @@ namespace SS
             {
                 this.cellMap[name] = new Cell(name, number, number);
             }
+            //Added code
             IEnumerable<string> temp = GetCellsToRecalculate(name);
             foreach (string cellName in temp)
             {
@@ -529,6 +532,7 @@ namespace SS
                 {
                     this.cellMap[name] = new Cell(name, formula, formula.Evaluate(Lookup1));
 
+                    //Added code
                     IEnumerable<string> temp = GetCellsToRecalculate(name);
                     foreach (string cellName in temp)
                     {
@@ -547,6 +551,7 @@ namespace SS
                 {
                     this.cellMap[name] = new Cell(name, formula, new FormulaError());
 
+                    //Added code
                     IEnumerable<string> temp = GetCellsToRecalculate(name);
                     foreach (string cellName in temp)
                     {
@@ -567,6 +572,7 @@ namespace SS
                 {
                     this.cellMap[name] = new Cell(name, formula, formula.Evaluate(Lookup1));
 
+                    //Added code
                     IEnumerable<string> temp = GetCellsToRecalculate(name);
                     foreach (string cellName in temp)
                     {
@@ -632,6 +638,7 @@ namespace SS
         {
             if (this.cellMap.TryGetValue(cellName, out Cell temp) && !(temp.value is FormulaError))
             {
+                //Added code
                 if (temp.value is double)
                 return (double)temp.value;
             }
@@ -644,7 +651,12 @@ namespace SS
         {
             throw new SpreadsheetReadException("Source is not consistent with schema");
         }
-
+        
+        //Added code
+        /// <summary>
+        /// Private method to recalculate each cell and adjust the its links accordingly
+        /// </summary>
+        /// <param name="name"></param>
         private void RecalculateCells(string name)
         {
             name = name.ToUpper();
