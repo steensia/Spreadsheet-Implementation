@@ -452,6 +452,7 @@ namespace SS
                 this.cellMap[name] = new Cell(name, number, number);
             }
             //Added code
+            // Retrieve the cells that need their values to be recalculated
             IEnumerable<string> temp = GetCellsToRecalculate(name);
             foreach (string cellName in temp)
             {
@@ -659,7 +660,6 @@ namespace SS
         /// <param name="name"></param>
         private void RecalculateCells(string name)
         {
-            name = name.ToUpper();
             if (this.cellMap.TryGetValue(name, out Cell temp))
             {
                 if (temp.content is Formula)
